@@ -119,32 +119,19 @@ app.get('/payins', function(req, res) {
   queryDB(query, res);
 });
 function _createPayIn(req,res){
-  return new Promise( function (resolve, reject){
-    let queryPayin = _insertQueryBuilder("payins",{
-      body : {
-        wallet_id : req.body.credited_wallet_id,
-        amount : req.body.amount
-      }
-    });
-    //let result = queryDB(queryPayin,res);
-    db.query(queryPayin,
-      function(err, result, fields){
-        if (err) throw err;
-        //console.log("payin result : "+JSON.stringify(result));
-        if(result.affectedRows==1)
-          resolve();
-        else reject();
-      }
-    );
-    //console.log("result de INSERT payin : "+result);
+  let queryPayin = _insertQueryBuilder("payins",{
+    body : {
+      wallet_id : req.body.credited_wallet_id,
+      amount : req.body.amount
+    }
   });
+  return queryDB(queryPayin, res, true);
 }
 
 app.get('/payouts', function(req, res) {
   let query = `SELECT * FROM payouts`;
   queryDB(query, res);
 });
-
 function _createPayout(req,res){
   let queryPayOut = _insertQueryBuilder("payouts",{
     body : {
@@ -152,32 +139,7 @@ function _createPayout(req,res){
       amount : req.body.amount
     }
   });
-
   return queryDB(queryPayOut,res,true);
-  /*let resultProm = queryDB(queryPayOut,false,true);
-  resultProm.then(
-    (queryResult) => { if(queryResult.affectedRows==1)}
-  );*/
-  //return new Promise( function (resolve, reject){
-
-    /*db.query(queryPayOut,
-      function(err, result, fields){
-        if (err) throw err;
-        console.log("payout result : "+JSON.stringify(result));
-        if(result.affectedRows==1)
-          resolve();
-        else reject();
-      }
-    );*//*
-    if(result.affectedRows==1){
-      console.log("payout resolve");
-      resolve();
-    }
-    else {
-      console.log("payout reject");
-      reject();
-    }
-  });*/
 }
 
 app.get('/transfers', function(req, res) {
@@ -189,9 +151,15 @@ app.post('/transfers', function(req, res){
   let queryTransfer = _insertQueryBuilder("transfers", req);
   queryDB(queryTransfer);
 
-  _createPayIn(req).then(
-    ()=> {_createPayout(req,res)}
-  ).catch(() => { res.sendStatus(500); });
+  let payInProm=_createPayIn(req);
+  let payOutProm=_createPayout(req);
+
+  Promise.all([payInProm, payOutProm]
+  ).then(
+    () => { res.sendStatus(200); }
+  ).catch(
+    () => { res.sendStatus(500); }
+  );
 });
 
 app.listen(8000, function(){
