@@ -1,46 +1,37 @@
-const express = require('express');
-const mysql = require('mysql');
+const express = require('express'); //https://expressjs.com/fr/api.html#res
+
 const bodyParser = require('body-parser');
 
 // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
 const bcrypt = require('bcrypt');
 
+let db = require('./src/data/dbConnector.js');
+let users = require(`./src/model/users`);
 
 const app = express();
-
 app.use(bodyParser.urlencoded({ extended: true }));
-
-let db = mysql.createConnection({
-  host: "localhost",
-  user: "admin",
-  password: "admin",
-  database: "watermelon",
-  port: "3306"
-});
 
 //////// Users route
 app.get('/users', function(req, res) {
   let query = `SELECT * FROM users`;
-  queryDB(query, res);
-  });
+  db.queryDB(query).then(
+    (result)=>{res.status(200).json(result)},
+    ()=>{res.sendStatus(500)});
+});
 app.post('/users', function(req, res) {
-  const query = _insertQueryBuilder("users", req);
-  queryDB(query);
-
-  _getUserIdFromMail(req.body.email).then(
-    function(user_id){
-    _createWallet(user_id,res);
-    },
-    function(){
-      console.log("Cannot resolve ID from MAIL");
-      res.send(500);
-    });
+  users.create(req);
 });
 
 app.get('/users/:id(\\d+)', function(req, res){
   const query = `SELECT * FROM users WHERE  id=${req.params.id}`;
-  queryDB(query,res);
+  db.queryDB(query
+  ).then(
+    (result)=>{res.status(200).json(result)}
+  ).catch(
+    ()=>{res.sendStatus(400)}
+  );
 });
+
 app.put('/users/:id(\\d+)', function(req, res){
   const query = _updateQueryBuilder("users",req);
   queryDB(query,res);
@@ -58,22 +49,7 @@ app.delete('/users/:id(\\d+)', function(req, res){
   // XXX : create real dependance and triggers
 });
 
-function _getUserIdFromMail(email){
-  return new Promise( function(resolve, reject){
-    let id = null;
-    db.query(
-      `SELECT id FROM users WHERE email='${email}'`,
-      function (err, result, fields){
-        if (err) throw err;
-        id=parseInt(result[0].id);
-
-        if(id==null) reject();
-        else resolve(id);
-      }
-    );
-  });
-}
-
+/*
 ///////////////////////// Cards Route
 app.get('/cards', function(req, res) {
   let query = `SELECT * FROM cards`;
@@ -102,17 +78,6 @@ app.get('/wallets', function(req, res) {
   let query = `SELECT * FROM wallets`;
   queryDB(query,res);
 });
-// Wallet is unique : created with users
-function _createWallet(id,res){
-  let query = _insertQueryBuilder("wallets", {
-    body : {
-      user_id : id
-    }
-  });
-  queryDB(query,res);
-}
-// #ASK: Create wallet after user, or at the same time with SQL trigger ?
-// FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
 
 app.get('/payins', function(req, res) {
   let query = `SELECT * FROM payins`;
@@ -146,7 +111,9 @@ app.get('/transfers', function(req, res) {
   let query = `SELECT * FROM transfers`;
   queryDB(query, res);
 });
-
+app.get('/transfers/:id(\\d+)', function (req,res){
+  _getTransferById(req.params.id,res);
+});
 app.post('/transfers', function(req, res){
   let queryTransfer = _insertQueryBuilder("transfers", req);
   queryDB(queryTransfer);
@@ -154,118 +121,39 @@ app.post('/transfers', function(req, res){
   let payInProm=_createPayIn(req);
   let payOutProm=_createPayout(req);
 
-  Promise.all([payInProm, payOutProm]
-  ).then(
-    () => { res.sendStatus(200); }
-  ).catch(
-    () => { res.sendStatus(500); }
-  );
+  Promise.all([payInProm, payOutProm])
+  .then(
+    result => { res.sendStatus(200); })
+    .catch(() => { sendError(res); });
 });
 
+app.delete('/transfers', function (req,res){
+  //TODO check right to delete
+  let delPayIProm = _deletePayin(req,res);
+  let delPayOProm = _deletePayout(req,res);
+  Promise.all([delPayIProm,delPayOProm])
+  .then(
+    ()=>{ _deleteById("transfers", req.params.id);}
+  )
+  .then( ()=>{sendOk(res);})
+  .catch( ()=>sendError(res));
+});
+*/
 app.listen(8000, function(){
-  db.connect(function(err){
+  db.connection.connect(function(err){
     if (err) throw err;
     console.log('Connection to database successful!');
   });
   console.log('Example app listening on port 3000!');
 });
 
-// TODO : remove parameters from sendReq with appropriate `this` trick
-function queryDB(query,res,promised){
-  console.log(query)
-  let queryResult = null;
-  db.query(query, function(err, result, fields) {
-    if (err) throw err;
-    if(res)
-    res.send(JSON.stringify(result));
-    queryResult=result;
-  });
-  if (promised){
-    return new Promise( function(resolve,reject){
-      if(queryResult==null)
-        reject();
-      else resolve(queryResult);
-    });
-  }
+
+
+function sendError(res){
+  res.sendStatus(500);
 }
-
-/**
-* Create an INSERT query
-*/
-function _insertQueryBuilder(table, req){
-  let queryParams = `INSERT INTO ${table} (`;
-  let queryValues = "VALUES (";
-
-  for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
-    for (let param of params){
-
-      if (req.body.hasOwnProperty(param)){
-        queryParams +=(param+",");
-
-        // If it's a non-string parameter, no quote !
-        if(attributes[table].strParams.includes(param))
-          queryValues += `'${req.body[param]}',`;
-        else if (attributes[table].nonStrParams.includes(param))
-          queryValues += `${req.body[param]},`;
-
-      }
-      else if(param != "id") {
-        //res.send("Error, missing parameter in request body");
-        throw new Error("Missing parameter in request body");
-        return;
-      }
-    }
-  }
-  queryParams = queryParams.slice(0, -1) + ") ";
-  queryValues = queryValues.slice(0, -1) + ") ";
-
-  //console.log(queryParams+queryValues);
-  return queryParams+queryValues;
-}
-
-/**
-* Create an UPDATE query for the item type (table) specified
-*/
-function _updateQueryBuilder(table, req){
-  let queryParam = `UPDATE ${table} SET `;
-  let queryCondition = ` WHERE id=${req.params.id}`;
-  let changedAttribute = req.body.attribute;
-  let value = req.body.value;
-
-      if (attributes[table].nonStrParams.includes(changedAttribute)){
-        queryParam += (changedAttribute+"="+value);
-      } else if (attributes[table].strParams.includes(changedAttribute)) {
-        queryParam += (changedAttribute+"="+`'${value}'`);
-      } else console.error("Unexpected parameter");
-
-      return queryParam+queryCondition;
-}
-
-const attributes = {
-  users : {
-    strParams : ["first_name","last_name","email","password","api_key"],
-    nonStrParams : ["id","is_admin"]
-  },
-  cards : {
-    strParams : ["brand","expired_at","last_4"],
-    nonStrParams : ["id", "user_id"]
-  },
-  wallets : {
-    strParams : [],
-    nonStrParams : ["user_id"]
-  },
-  payins : {
-    strParams : [],
-    nonStrParams : ["wallet_id", "amount"]
-  },
-  payouts : {
-    strParams : [],
-    nonStrParams : ["wallet_id", "amount"]
-  },
-  transfers : {
-    strParams : [],
-    nonStrParams : ["debited_wallet_id","credited_wallet_id","amount"]
-  }
+function sendOk(res){
+  res.sendStatus(200);
 }
 
 // TODO : Tests
