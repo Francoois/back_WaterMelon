@@ -35,7 +35,6 @@ describe("Users API OK", function() {
                 userAttributes,
                 function(error, response, body) {
                   addedUserId = parseInt(response.body);
-                  //console.log(addedUserId);
                   expect(response.statusCode).toBe(200);
                   resolve();
                   //done();
