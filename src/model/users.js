@@ -1,40 +1,61 @@
 //users.js
 
-let datamodel = require(`./datamodel.js`);
-let db = require('../src/data/dbConnector.js');
-let wallets = require('./wallets');
+define(['data/dbConnector',
+'model/datamodel',
+'model/wallets'
+], function(db, datamodel, wallets){
 
-function create(){
+  /*let datamodel = require(`./datamodel.js`);
+  let db = require('../src/data/dbConnector.js');
+  let wallets = require('./wallets');*/
 
-  const query = datamodel.insertQueryBuilder("users", req);
-  db.queryDB(query);
-  let userId;
-  datamodel.getUserIdFromMail(req.body.email).then(
-    (user_id)=>{
-      userId = user_id;
-      wallets.createWallet(user_id);
+  const table = 'users';
+
+  function getUserIdFromMail(email){
+    return new Promise( function(resolve, reject){
+      let id = null;
+      db.query(
+        `SELECT id FROM users WHERE email='${email}'`,
+        function (err, result, fields){
+          if (err) throw err;
+          id=parseInt(result[0].id);
+
+          if(id==null) reject();
+          else resolve(id);
+        }
+      );
+    });
+  }
+
+  return {
+    getAll : function(){
+      let query = `SELECT * FROM ${table}`;
+      return datamodel.queryDB(query);
     },
-    ()=>{console.error("Cannot resolve ID from MAIL");}
-  ).then(
-      ()=>{res.status(200).json(userId);},
-      ()=>{console.error("Unable to create wallet for user "+userId);}
-    )
-}
+    create : function(req){
+      const query = datamodel.insertQueryBuilder("users", req);
 
-function _getUserIdFromMail(email){
-return new Promise( function(resolve, reject){
-  let id = null;
-  db.query(
-    `SELECT id FROM users WHERE email='${email}'`,
-    function (err, result, fields){
-      if (err) throw err;
-      id=parseInt(result[0].id);
-
-      if(id==null) reject();
-      else resolve(id);
+      return datamodel.queryDB(query
+      ).then(
+        ()=>{return getUserIdFromMail(req.body.email)},
+        ()=>{console.error("Cannot create user from REQUEST");}
+      ).then( //FIXME nasty
+        (user_id)=>{
+          return new Promise(
+            function (resolve, reject){
+              wallets.create(user_id).then(
+                ()=>{resolve(user_id);},
+                ()=>{reject()}
+              );
+            });
+        },
+        ()=>{console.error("Cannot resolve ID from MAIL");}
+      );
+    },
+    getById : function(id){
+      const query = `SELECT * FROM users WHERE  id=${id}`;
+      return datamodel.queryDB(query);
     }
-  );
-});
-}
+  }
 
-module.exports = users;
+});

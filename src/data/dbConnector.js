@@ -13,9 +13,6 @@ define(['mysql'], function(mysql){
   }
   MySingleton.prototype = {
       initialize: function(){
-          // summary:
-          //      Initializes the singleton.
-
           this.db = mysql.createConnection({
                 host: "localhost",
                 user: "admin",

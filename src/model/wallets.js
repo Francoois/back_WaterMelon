@@ -1,16 +1,27 @@
 //wallets.js
 
-// Wallet is unique : created with users
-// XXX : Trigger event to create wallet ?
-function createWallet(id,res){
-  let query = _insertQueryBuilder("wallets", {
-    body : {
-      user_id : id
-    }
-  });
-  return queryDB(query,res);
-}
-// #ASK: Create wallet after user, or at the same time with SQL trigger ?
-// FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
+define([
+  'data/dbConnector',
+  'model/datamodel'
+], function (db, dm){
+  'use strict'
 
-module.exports = {createWallet}
+  let table = 'wallets'
+
+  return {
+
+    // Wallet is unique : created with users
+    create : function(userId){
+      let query = dm.insertQueryBuilder(
+        table,
+      {
+        body : {
+          user_id : userId
+        }
+      });
+      return dm.queryDB(query);
+    }
+  }
+  // FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
+
+});

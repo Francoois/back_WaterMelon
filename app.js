@@ -9,28 +9,35 @@ requirejs([
   'express', //https://expressjs.com/fr/api.html#res
   'body-parser',
   'bcrypt', // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
-  'data/dbConnector'],
+  'data/dbConnector',
+  'model/users',
+],
 
-function(express, bodyParser, bcrypt, db){
-
+function(express, bodyParser, bcrypt, db, users) {
+'use strict'
   const app = express();
   app.use(bodyParser.urlencoded({ extended: true }));
 
   //////// Users route
   app.get('/users', function(req, res) {
-    let query = `SELECT * FROM users`;
-    db.queryDB(query).then(
+    users.getAll().then(
       (result)=>{res.status(200).json(result)},
-      ()=>{res.sendStatus(500)});
+      ()=>{res.sendStatus(500)}
+    );
   });
+
   app.post('/users', function(req, res) {
-    users.create(req);
+    users.create(req).then(
+        (userId)=>{res.status(200).json(userId);}
+      ).catch(
+        ()=>{
+          res.sendStatus(500);
+          console.error("Unable to create user's wallet");}
+      );
   });
 
   app.get('/users/:id(\\d+)', function(req, res){
-    const query = `SELECT * FROM users WHERE  id=${req.params.id}`;
-    db.queryDB(query
-    ).then(
+    users.getById(req.params.id).then(
       (result)=>{res.status(200).json(result)}
     ).catch(
       ()=>{res.sendStatus(400)}
