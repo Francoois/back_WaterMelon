@@ -31,24 +31,6 @@ define(['data/dbConnector'], function(db, datamodel){
     }
   }
 
-  /**
-  * Create an UPDATE query for the item type (table) specified
-  */
-  function updateQueryBuilder(table, req){
-    let queryParam = `UPDATE ${table} SET `;
-    let queryCondition = ` WHERE id=${req.params.id}`;
-    let changedAttribute = req.body.attribute;
-    let value = req.body.value;
-
-        if (attributes[table].nonStrParams.includes(changedAttribute)){
-          queryParam += (changedAttribute+"="+value);
-        } else if (attributes[table].strParams.includes(changedAttribute)) {
-          queryParam += (changedAttribute+"="+`'${value}'`);
-        } else console.error("Unexpected parameter");
-
-        return queryParam+queryCondition;
-  }
-
   function deleteById(table, id, res){
     if ((typeOf(table) === "string" || table instanceof String) && table in attributes){
       let queryDelete = `DELETE FROM ${table} WHERE id=${id}`;
@@ -113,6 +95,22 @@ define(['data/dbConnector'], function(db, datamodel){
 
         //console.log(queryParams+queryValues);
         return queryParams+queryValues;
+      },
+
+      /**
+      * Create an UPDATE query for the item type (table) specified
+      */
+      updateQueryBuilder : function(table, id, changedAttribute, value){
+        let queryParam = `UPDATE ${table} SET `;
+        let queryCondition = ` WHERE id=${id}`;
+
+            if (attributes[table].nonStrParams.includes(changedAttribute)){
+              queryParam += (changedAttribute+"="+value);
+            } else if (attributes[table].strParams.includes(changedAttribute)) {
+              queryParam += (changedAttribute+"="+`'${value}'`);
+            } else console.error("Unexpected parameter");
+
+            return queryParam+queryCondition;
       }
   }
 });

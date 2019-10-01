@@ -45,20 +45,22 @@ function(express, bodyParser, bcrypt, db, users) {
   });
 
   app.put('/users/:id(\\d+)', function(req, res){
-    const query = _updateQueryBuilder("users",req);
-    queryDB(query,res);
+    users.update(
+      req.params.id,
+      req.body.attribute,
+      req.body.value
+    ).then(
+      ()=>{res.sendStatus(200)}
+    ).catch(()=>res.sendStatus(500));
   });
+
   /**
   * Handles Users AND Wallet DELETE
   */
   app.delete('/users/:id(\\d+)', function(req, res){
-    let id = req.params.id;
-    let query = `DELETE FROM users WHERE id=${id}`;
-    let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
-
-    queryDB(queryWallet);
-    queryDB(query, res);
-    // XXX : create real dependance and triggers
+    users.deleteById(req.params.id).then(
+      ()=>{res.sendStatus(200)}
+    ).catch(()=>res.sendStatus(500));
   });
 
   /*

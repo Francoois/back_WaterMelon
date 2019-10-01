@@ -55,6 +55,19 @@ define(['data/dbConnector',
     getById : function(id){
       const query = `SELECT * FROM users WHERE  id=${id}`;
       return datamodel.queryDB(query);
+    },
+    update : function(id, attribute, value){
+      const query = updateQueryBuilder(table, id, attribute, value);
+      return datamodel.queryDB(query);
+    },
+    deleteById : function(id){
+      let query = `DELETE FROM users WHERE id=${id}`;
+      let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
+
+      return datamodel.queryDB(queryWallet).then(
+        ()=>{return datamodel.queryDB(query);},
+        ()=>{console.error("DELETE : delete user failed");}
+      );
     }
   }
 
