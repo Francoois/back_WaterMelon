@@ -7,7 +7,8 @@
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "mysql": "^2.17.1"
+    "mysql": "^2.17.1",
+    "requirejs": "^2.3.6"
   },
   "devDependencies": {
     "jasmine": "^3.5.0",
