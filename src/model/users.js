@@ -11,7 +11,7 @@ define(['data/dbConnector',
 
   const table = 'users';
 
-  function getUserIdFromMail(email){
+  function _getUserIdFromMail(email){
     return new Promise( function(resolve, reject){
       let id = null;
       db.query(
@@ -26,49 +26,49 @@ define(['data/dbConnector',
       );
     });
   }
+  let UserClass = Object.create(datamodel);
 
-  return {
-    getAll : function(){
-      let query = `SELECT * FROM ${table}`;
-      return datamodel.queryDB(query);
-    },
-    create : function(req){
-      const query = datamodel.insertQueryBuilder("users", req);
+  Object.assign(UserClass,
+    {
+      table : table,
+      create : function(req){
+        const query = this.insertQueryBuilder("users", req);
 
-      return datamodel.queryDB(query
-      ).then(
-        ()=>{return getUserIdFromMail(req.body.email)},
-        ()=>{console.error("Cannot create user from REQUEST");}
-      ).then( //FIXME nasty
-        (user_id)=>{
-          return new Promise(
-            function (resolve, reject){
-              wallets.create(user_id).then(
-                ()=>{resolve(user_id);},
-                ()=>{reject()}
-              );
-            });
-        },
-        ()=>{console.error("Cannot resolve ID from MAIL");}
-      );
-    },
-    getById : function(id){
-      const query = `SELECT * FROM users WHERE  id=${id}`;
-      return datamodel.queryDB(query);
-    },
-    update : function(id, attribute, value){
-      const query = updateQueryBuilder(table, id, attribute, value);
-      return datamodel.queryDB(query);
-    },
-    deleteById : function(id){
-      let query = `DELETE FROM users WHERE id=${id}`;
-      let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
+        return this.queryDB(query
+        ).then(
+          ()=>{return _getUserIdFromMail(req.body.email)},
+          ()=>{console.error("Cannot create user from REQUEST");}
+        ).then( //FIXME nasty
+          (user_id)=>{
+            return new Promise(
+              function (resolve, reject){
+                wallets.create(user_id).then(
+                  ()=>{resolve(user_id);},
+                  ()=>{reject()}
+                );
+              });
+          },
+          ()=>{console.error("Cannot resolve ID from MAIL");}
+        );
+      },
+      getById : function(id){
+        const query = `SELECT * FROM users WHERE  id=${id}`;
+        return this.queryDB(query);
+      },
+      update : function(id, attribute, value){
+        const query = updateQueryBuilder(table, id, attribute, value);
+        return this.queryDB(query);
+      },
+      deleteById : function(id){
+        let query = `DELETE FROM users WHERE id=${id}`;
+        let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
 
-      return datamodel.queryDB(queryWallet).then(
-        ()=>{return datamodel.queryDB(query);},
-        ()=>{console.error("DELETE : delete user failed");}
-      );
-    }
-  }
+        return this.queryDB(queryWallet).then(
+          ()=>{return this.queryDB(query);},
+          ()=>{console.error("DELETE : delete user failed");}
+        );
+      }
+    });
+  return UserClass;
 
 });

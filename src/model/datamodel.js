@@ -39,29 +39,32 @@ define(['data/dbConnector'], function(db, datamodel){
     console.error("Bad table : "+table);
   }
 
-  return {
-    // TODO : remove parameters from sendReq with appropriate `this` trick
-    /**
-    * Returns a Promise to execute the query
-    * query : the string query to execute
-    * res[optional] : response object to send the response with
-    *
-    */
-    queryDB : function (query){
-      return new Promise( function(resolve,reject){
-        console.log(query)
-        db.query(query, function(err, result, fields) {
-          if (err){
-            //throw err
-            console.error("WaterMelonDB Error :" + err);
-            reject();
-          }else{
-            console.log("success");
-            resolve(result);
-          }
-        });
+  /**
+  * Returns a Promise to execute the query
+  * query : the string query to execute
+  */
+  let queryDB = function (query){
+    return new Promise( function(resolve,reject){
+      console.log(query)
+      db.query(query, function(err, result, fields) {
+        if (err){
+          //throw err
+          console.error("WaterMelonDB Error :" + err);
+          reject();
+        }else{
+          console.log("success");
+          resolve(result);
+        }
       });
+    });
+  };
+
+  return {
+    getAll : function(){
+      let query = `SELECT * FROM ${this.table}`;
+      return queryDB(query);
     },
+        queryDB : queryDB,
 
     /**
       * Create an INSERT query
