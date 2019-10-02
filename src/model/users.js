@@ -52,15 +52,11 @@ define(['data/dbConnector',
         );
       },
       getById : function(id){
-        const query = `SELECT * FROM users WHERE  id=${id}`;
-        return this.queryDB(query);
-      },
-      update : function(id, attribute, value){
-        const query = updateQueryBuilder(table, id, attribute, value);
+        const query = `SELECT * FROM ${table} WHERE  id=${id}`;
         return this.queryDB(query);
       },
       deleteById : function(id){
-        let query = `DELETE FROM users WHERE id=${id}`;
+        let query = `DELETE FROM ${this.table} WHERE id=${id}`;
         let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
 
         return this.queryDB(queryWallet).then(

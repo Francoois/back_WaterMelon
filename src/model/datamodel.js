@@ -4,6 +4,8 @@
 // It should be a parent object of work object
 
 define(['data/dbConnector'], function(db, datamodel){
+  'use strict'
+
   const attributes = {
     users : {
       strParams : ["first_name","last_name","email","password","api_key"],
@@ -49,7 +51,7 @@ define(['data/dbConnector'], function(db, datamodel){
       db.query(query, function(err, result, fields) {
         if (err){
           //throw err
-          console.error("WaterMelonDB Error :" + err);
+          console.error("\n    ===> WaterMelonDB Error :" + err);
           reject();
         }else{
           console.log("success");
@@ -57,14 +59,28 @@ define(['data/dbConnector'], function(db, datamodel){
         }
       });
     });
+  },
+  getAll = function(){
+    let query = `SELECT * FROM ${this.table}`;
+    return queryDB(query);
+  },
+  update = function(id, attribute, value){
+    const query = this.updateQueryBuilder(this.table, id, attribute, value);
+    return this.queryDB(query);
+  },
+  getById = function(id){
+    const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
+    return this.queryDB(query);
   };
 
   return {
-    getAll : function(){
-      let query = `SELECT * FROM ${this.table}`;
-      return queryDB(query);
-    },
-        queryDB : queryDB,
+    getAll : getAll,
+
+    queryDB : queryDB,
+
+    update : update,
+
+    getById : getById,
 
     /**
       * Create an INSERT query
@@ -107,9 +123,9 @@ define(['data/dbConnector'], function(db, datamodel){
         let queryParam = `UPDATE ${table} SET `;
         let queryCondition = ` WHERE id=${id}`;
 
-            if (attributes[table].nonStrParams.includes(changedAttribute)){
+            if (attributes[this.table].nonStrParams.includes(changedAttribute)){
               queryParam += (changedAttribute+"="+value);
-            } else if (attributes[table].strParams.includes(changedAttribute)) {
+            } else if (attributes[this.table].strParams.includes(changedAttribute)) {
               queryParam += (changedAttribute+"="+`'${value}'`);
             } else console.error("Unexpected parameter");
 
