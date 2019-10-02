@@ -33,14 +33,6 @@ define(['data/dbConnector'], function(db, datamodel){
     }
   }
 
-  function deleteById(table, id, res){
-    if ((typeOf(table) === "string" || table instanceof String) && table in attributes){
-      let queryDelete = `DELETE FROM ${table} WHERE id=${id}`;
-      return queryDB(queryDelete, res);
-    }
-    console.error("Bad table : "+table);
-  }
-
   /**
   * Returns a Promise to execute the query
   * query : the string query to execute
@@ -71,6 +63,23 @@ define(['data/dbConnector'], function(db, datamodel){
   getById = function(id){
     const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
     return this.queryDB(query);
+  },
+  deleteById = function(id){
+    if ((typeof(this.table) === "string" || this.table instanceof String) && this.table in attributes){
+      const query = `DELETE FROM ${this.table} WHERE id=${id}`;
+      return this.queryDB(query);
+    }
+  },
+  _getLastInserted = function(){
+    let table = this.table;//FIXME : cannot keep this in Promise
+    return new Promise( function(resolve, reject){
+      let query = `SELECT MAX(id) as id FROM ${table}`;
+      queryDB(query
+      ).then(
+        (result)=>{
+          resolve(result[0].id);}
+      ).catch( ()=> {console.error(`DB: Couldn't get last id in table ${table}`);});
+    });
   };
 
   return {
@@ -82,10 +91,19 @@ define(['data/dbConnector'], function(db, datamodel){
 
     getById : getById,
 
+    getLastInserted : _getLastInserted,
+
+    deleteById : deleteById,
+
     /**
       * Create an INSERT query
       */
-    insertQueryBuilder : function (table, req){
+    insertQueryBuilder : function (req){
+      if(this.table ==undefined)
+      throw new Error();
+
+      let table = this.table;
+
         let queryParams = `INSERT INTO ${table} (`;
         let queryValues = "VALUES (";
 

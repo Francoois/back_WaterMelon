@@ -5,10 +5,6 @@ define(['data/dbConnector',
 'model/wallets'
 ], function(db, datamodel, wallets){
 
-  /*let datamodel = require(`./datamodel.js`);
-  let db = require('../src/data/dbConnector.js');
-  let wallets = require('./wallets');*/
-
   const table = 'users';
 
   function _getUserIdFromMail(email){
@@ -32,8 +28,7 @@ define(['data/dbConnector',
     {
       table : table,
       create : function(req){
-        const query = this.insertQueryBuilder("users", req);
-
+        const query = this.insertQueryBuilder(req);
         return this.queryDB(query
         ).then(
           ()=>{return _getUserIdFromMail(req.body.email)},

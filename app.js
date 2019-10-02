@@ -11,10 +11,13 @@ requirejs([
   'bcrypt', // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
   'data/dbConnector',
   'model/users',
+  'model/cards'
 ],
 
-function(express, bodyParser, bcrypt, db, users) {
+function(express, bodyParser, bcrypt, db, users, cards) {
+
 'use strict'
+
   const app = express();
   app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -63,7 +66,7 @@ function(express, bodyParser, bcrypt, db, users) {
     ).catch(()=>res.sendStatus(500));
   });
 
-  /*
+
   ///////////////////////// Cards Route
   app.get('/cards', function(req, res) {
     let query = `SELECT * FROM cards`;
@@ -74,20 +77,25 @@ function(express, bodyParser, bcrypt, db, users) {
     queryDB(query, res);
   });
   app.post('/cards', function(req,res){
-    const query = _insertQueryBuilder("cards", req);
-    queryDB(query, res);
+    // TODO : get card ID after insert ?
+    cards.create(req).then(
+        (newId)=>{res.status(200).json(newId);}
+      ).catch(
+        ()=>{ res.sendStatus(500);}
+      );
   });
   app.put('/cards/:id(\\d+)', function(req,res){
     const query = _updateQueryBuilder("cards",req);
     queryDB(query, res);
   });
   app.delete('/cards/:id(\\d+)', function(req, res){
-    let id = req.params.id;
-    let query = `DELETE FROM cards WHERE id=${id}`;
-    queryDB(query,res);
-  });
+    cards.deleteById(req.params.id).then(
+      ()=>{res.sendStatus(200);},
+      ()=>{res.sendStatus(500);} );
+    }
+  );
 
-
+/*
   app.get('/wallets', function(req, res) {
     let query = `SELECT * FROM wallets`;
     queryDB(query,res);

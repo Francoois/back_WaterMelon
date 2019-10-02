@@ -6,22 +6,26 @@ define([
 ], function (db, dm){
   'use strict'
 
-  let table = 'wallets'
+  let WalletsClass = Object.create(dm);
 
-  return {
-
+  Object.assign(WalletsClass,{
     // Wallet is unique : created with users
+    table : 'wallets',
     create : function(userId){
-      let query = dm.insertQueryBuilder(
-        table,
+      let query = this.insertQueryBuilder(
       {
         body : {
           user_id : userId
         }
       });
-      return dm.queryDB(query);
+      return this.queryDB(query);
     }
-  }
-  // FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
+// FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
+
+});
+
+  return WalletsClass;
+
+
 
 });

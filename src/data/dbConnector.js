@@ -1,5 +1,5 @@
 //dbConnector.js
-
+//https://gist.github.com/jasonwyatt/1106973
 define(['mysql'], function(mysql){
 
   let instance = null;

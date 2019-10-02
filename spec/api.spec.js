@@ -1,10 +1,7 @@
 'use strict'
 
 var request = require("request");
-
 let base_url = `http://localhost:8000`;
-
-let testTime = Date.now();
 let userAttributes = {
   header : {'Content-Type' : 'application/x-www-form-urlencoded'},
   url : base_url+"/users",
@@ -27,14 +24,13 @@ updateUserParams = {
 let createOneUser = function() {
   return new Promise(
     function(resolve,reject){
-      testTime = Date.now();
+      let testTime = Date.now();
       userAttributes.form.email="jasmin"+testTime+"@wanadoo.fr";
       request.post(
       userAttributes,
       function(error, response, body) {
         let addedUserId = parseInt(response.body);
         expect(response.statusCode).toBe(200);
-        console.log("CREATE USER : created id = "+addedUserId);
         resolve(addedUserId);
         //done();
       });
@@ -75,7 +71,6 @@ describe("Users API OK \n", function() {
            createOneUser().then((addedUserId)=>{
              request.delete(base_url+"/users/"+addedUserId, function(error, response, body){
              expect(response.statusCode).toBe(200);
-             console.log("DELETE USER : deleted user id = "+addedUserId);
              done();
            });
          });
@@ -87,16 +82,14 @@ describe("Users API OK \n", function() {
             let url=base_url+"/users/"+addedUserId;
             request(
               {
-              method : 'PUT',
-              url : url,
-              form : { attribute : "password",
-              value : "tasvucamarche?" }
-            },
+                method : 'PUT',
+                url : url,
+                form : { attribute : "password", value : "tasvucamarche?" }
+              },
               function(error, response, body){
             expect(response.statusCode).toBe(200);
-            console.log("UPDATE USER : updated user id = "+addedUserId);
             done();
-          });
+              });
         });
       });
  });
