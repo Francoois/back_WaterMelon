@@ -51,10 +51,6 @@ define(['data/dbConnector',
           ()=>{console.error("Cannot resolve ID from MAIL");}
         );
       },
-      getById : function(id){
-        const query = `SELECT * FROM ${table} WHERE  id=${id}`;
-        return this.queryDB(query);
-      },
       deleteById : function(id){
         let query = `DELETE FROM ${this.table} WHERE id=${id}`;
         let queryWallet = `DELETE FROM wallets WHERE user_id=${id}`;
