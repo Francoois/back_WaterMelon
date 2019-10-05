@@ -80,9 +80,59 @@ define(['data/dbConnector'], function(db, datamodel){
           resolve(result[0].id);}
       ).catch( ()=> {console.error(`DB: Couldn't get last id in table ${table}`);});
     });
+  },
+  _create = function(req){
+    //console.log("CREER : "+this.query);
+
+    const query = this.insertQueryBuilder(req);
+    return this.queryDB(query
+    ).then(()=>{ let leDer = this.getLastInserted()
+      return leDer;
+    });
   };
+  /**
+    * Create an INSERT query
+    */
+  let insertQueryBuilder = function(req){
+    if(this.table ==undefined)
+    throw new Error();
+
+    let table = this.table;
+
+      let queryParams = `INSERT INTO ${table} (`;
+      let queryValues = "VALUES (";
+
+      for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+        for (let param of params){
+
+          if (req.body.hasOwnProperty(param)){
+            queryParams +=(param+",");
+
+            // If it's a non-string parameter, no quote !
+            if(attributes[table].strParams.includes(param))
+              queryValues += `'${req.body[param]}',`;
+            else if (attributes[table].nonStrParams.includes(param))
+              queryValues += `${req.body[param]},`;
+
+          }
+          else if(param != "id") {
+            //res.send("Error, missing parameter in request body");
+            throw new Error("Missing parameter in request body : " + JSON.stringify(req.body));
+            return;
+          }
+        }
+      }
+      queryParams = queryParams.slice(0, -1) + ") ";
+      queryValues = queryValues.slice(0, -1) + ") ";
+
+      //console.log(queryParams+queryValues);
+      return queryParams+queryValues;
+    };
 
   return {
+
+    create : _create,
+
     getAll : getAll,
 
     queryDB : queryDB,
@@ -95,44 +145,7 @@ define(['data/dbConnector'], function(db, datamodel){
 
     deleteById : deleteById,
 
-    /**
-      * Create an INSERT query
-      */
-    insertQueryBuilder : function (req){
-      if(this.table ==undefined)
-      throw new Error();
-
-      let table = this.table;
-
-        let queryParams = `INSERT INTO ${table} (`;
-        let queryValues = "VALUES (";
-
-        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
-          for (let param of params){
-
-            if (req.body.hasOwnProperty(param)){
-              queryParams +=(param+",");
-
-              // If it's a non-string parameter, no quote !
-              if(attributes[table].strParams.includes(param))
-                queryValues += `'${req.body[param]}',`;
-              else if (attributes[table].nonStrParams.includes(param))
-                queryValues += `${req.body[param]},`;
-
-            }
-            else if(param != "id") {
-              //res.send("Error, missing parameter in request body");
-              throw new Error("Missing parameter in request body : " + JSON.stringify(req.body));
-              return;
-            }
-          }
-        }
-        queryParams = queryParams.slice(0, -1) + ") ";
-        queryValues = queryValues.slice(0, -1) + ") ";
-
-        //console.log(queryParams+queryValues);
-        return queryParams+queryValues;
-      },
+    insertQueryBuilder : insertQueryBuilder,
 
       /**
       * Create an UPDATE query for the item type (table) specified

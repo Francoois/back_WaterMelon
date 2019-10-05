@@ -1,5 +1,15 @@
 //payouts.js
 
-function _deletePayout(req, res){
-  return _deleteById("payouts", req.params.id);
-}
+define([
+  'model/datamodel'
+], function (datamodel){
+  'use strict'
+
+  let PayoutsClass = Object.create(datamodel);
+  Object.assign(PayoutsClass,{
+
+    table : 'payouts'
+
+  });
+  return PayoutsClass;
+});

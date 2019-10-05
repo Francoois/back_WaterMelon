@@ -1,5 +1,19 @@
 //payins.js
 
-function _deleteIn(req, res){
-  return _deleteById("payins", req.params.id);
-}
+define([
+  'model/datamodel'
+], function (datamodel){
+  'use strict'
+
+  let PayinsClass = Object.create(datamodel);
+  Object.assign(PayinsClass,{
+
+    table : 'payins',
+
+    create : function(req){
+      datamodel.create.call(this, req);
+    }
+
+  });
+  return PayinsClass;
+});

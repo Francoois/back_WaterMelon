@@ -11,10 +11,17 @@ requirejs([
   'bcrypt', // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
   'data/dbConnector',
   'model/users',
-  'model/cards'
+  'model/cards',
+  'model/wallets',
+  'model/payins',
+  'model/payouts',
+  'model/transfers'
 ],
 
-function(express, bodyParser, bcrypt, db, users, cards) {
+function(
+  express, bodyParser, bcrypt, db, users, cards, wallets,
+  payins, payouts, transfers
+) {
 
 'use strict'
 
@@ -69,12 +76,17 @@ function(express, bodyParser, bcrypt, db, users, cards) {
 
   ///////////////////////// Cards Route
   app.get('/cards', function(req, res) {
-    let query = `SELECT * FROM cards`;
-    queryDB(query, res);
+    cards.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
   app.get('/cards/:id(\\d+)', function(req, res) {
-    let query = `SELECT * FROM cards WHERE id=${req.params.id}`;
-    queryDB(query, res);
+    cards.getById(req.params.id).then(
+      (result)=>{res.status(200).json(result)}
+    ).catch(
+      ()=>{res.sendStatus(400)}
+    );
   });
   app.post('/cards', function(req,res){
     // TODO : get card ID after insert ?
@@ -85,8 +97,13 @@ function(express, bodyParser, bcrypt, db, users, cards) {
       );
   });
   app.put('/cards/:id(\\d+)', function(req,res){
-    const query = _updateQueryBuilder("cards",req);
-    queryDB(query, res);
+    cards.update(
+      req.params.id,
+      req.body.attribute,
+      req.body.value
+    ).then(
+      ()=>{res.sendStatus(200);},
+      ()=>{res.sendStatus(500);} );
   });
   app.delete('/cards/:id(\\d+)', function(req, res){
     cards.deleteById(req.params.id).then(
@@ -95,60 +112,50 @@ function(express, bodyParser, bcrypt, db, users, cards) {
     }
   );
 
-/*
+
   app.get('/wallets', function(req, res) {
-    let query = `SELECT * FROM wallets`;
-    queryDB(query,res);
+    wallets.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
 
   app.get('/payins', function(req, res) {
-    let query = `SELECT * FROM payins`;
-    queryDB(query, res);
+    payins.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
-  function _createPayIn(req,res){
-    let queryPayin = _insertQueryBuilder("payins",{
-      body : {
-        wallet_id : req.body.credited_wallet_id,
-        amount : req.body.amount
-      }
-    });
-    return queryDB(queryPayin, res, true);
-  }
+
 
   app.get('/payouts', function(req, res) {
-    let query = `SELECT * FROM payouts`;
-    queryDB(query, res);
+    payouts.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
-  function _createPayout(req,res){
-    let queryPayOut = _insertQueryBuilder("payouts",{
-      body : {
-        wallet_id : req.body.debited_wallet_id,
-        amount : req.body.amount
-      }
-    });
-    return queryDB(queryPayOut,res,true);
-  }
 
   app.get('/transfers', function(req, res) {
-    let query = `SELECT * FROM transfers`;
-    queryDB(query, res);
+    transfers.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
+
   app.get('/transfers/:id(\\d+)', function (req,res){
-    _getTransferById(req.params.id,res);
+    transfers.getById(req.params.id).then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
   });
   app.post('/transfers', function(req, res){
-    let queryTransfer = _insertQueryBuilder("transfers", req);
-    queryDB(queryTransfer);
-
-    let payInProm=_createPayIn(req);
-    let payOutProm=_createPayout(req);
-
-    Promise.all([payInProm, payOutProm])
-    .then(
-      result => { res.sendStatus(200); })
-      .catch(() => { sendError(res); });
+    transfers.create(req).then(
+        (newId)=>{res.status(200).json(newId);}
+      ).catch(
+        ()=>{ res.sendStatus(500);}
+      );
   });
-
+/*
   app.delete('/transfers', function (req,res){
     //TODO check right to delete
     let delPayIProm = _deletePayin(req,res);

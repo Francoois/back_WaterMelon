@@ -22,7 +22,7 @@ define([
     }
 // FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
 
-});
+  });
 
   return WalletsClass;
 
