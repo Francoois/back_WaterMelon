@@ -149,20 +149,20 @@ function(
       );
   });
 
-  app.get('/transfers', function(req, res) {
+  app.get(prefix+'/transfers', function(req, res) {
     transfers.getAll().then(
       (result)=>{res.status(200).json(result)},
       ()=>{res.sendStatus(500)}
     );
   });
 
-  app.get('/transfers/:id(\\d+)', function (req,res){
+  app.get(prefix+'/transfers/:id(\\d+)', function (req,res){
     transfers.getById(req.params.id).then(
       (result)=>{res.status(200).json(result)},
       ()=>{res.sendStatus(500)}
     );
   });
-  app.post('/transfers', function(req, res){
+  app.post(prefix+'/transfers', function(req, res){
     transfers.create(req).then(
         (newId)=>{res.status(200).json(newId);}
       ).catch(

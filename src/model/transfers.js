@@ -9,10 +9,12 @@ define([
 ){
   'use strict'
 
+  //TODO : check balance before transfer
+  
   let TransfersClass = Object.create(datamodel);
   Object.assign(TransfersClass,{
 
-    table : 'transfers',
+    table : 'transfers'/*,
 
     create : function(req){
       const query = this.insertQueryBuilder(req);
@@ -42,7 +44,7 @@ define([
         },
         () => { console.error("Error creating Pay IN/OUT");}
       );
-    },
+    }*/,
 
     delete : function(id){
       //TODO check right to delete
