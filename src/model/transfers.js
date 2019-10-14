@@ -42,6 +42,18 @@ define([
         },
         () => { console.error("Error creating Pay IN/OUT");}
       );
+    },
+
+    delete : function(id){
+      //TODO check right to delete
+      let delPayIProm = _deletePayin(req,res);
+      let delPayOProm = _deletePayout(req,res);
+      Promise.all([delPayIProm,delPayOProm])
+      .then(
+        ()=>{ _deleteById("transfers", req.params.id);}
+      )
+      .then( ()=>{sendOk(res);})
+      .catch( ()=>sendError(res));
     }
 
   });

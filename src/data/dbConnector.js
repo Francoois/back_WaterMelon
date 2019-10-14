@@ -1,5 +1,6 @@
 //dbConnector.js
 //https://gist.github.com/jasonwyatt/1106973
+
 define(['mysql'], function(mysql){
 
   let instance = null;
@@ -18,7 +19,8 @@ define(['mysql'], function(mysql){
                 user: "admin",
                 password: "admin",
                 database: "watermelon",
-                port: "3306"
+                port: "3306",
+                timezone: 'utc'
               });
       }
   };

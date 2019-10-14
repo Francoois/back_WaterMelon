@@ -90,6 +90,7 @@ define(['data/dbConnector'], function(db, datamodel){
       return leDer;
     });
   };
+  //FIXME : stop using req object inherited from single file app
   /**
     * Create an INSERT query
     */

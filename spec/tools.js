@@ -1,12 +1,30 @@
 //tools.js
 
-var compareObject = function(source, copy, newId){
+module.exports = (function tools(){
+  return {
 
-  let testSource = JSON.parse(JSON.stringify(source.form));
-  testSource.id = newId;
+    compareObject : function(source, copy, newId){
+      console.log("\nsource : \n"+JSON.stringify(source)+"\n"+"\n\ntestBody :\n"+JSON.stringify(copy));
 
-  let testBody = JSON.parse(copy)[0];
+      let testSource = JSON.parse(JSON.stringify(source));
+      testSource.id = newId;
 
-  expect(testBody).toEqual(testSource);
-};
-module.export = compareObject;
+      let testCopy= JSON.parse(JSON.stringify(copy));
+
+      console.log("\nsource : \n"+JSON.stringify(testSource)+"\n"+"testBody :\n"+JSON.stringify(testCopy));
+      expect(testCopy).toEqual(testSource);
+    },
+
+    getRandomInt : function(max){
+      return Math.floor(Math.random() * Math.floor(max));
+    },
+
+    dbDateToHumanDate : function(dbDate){
+      let d = new Date(dbDate);
+      return d.getUTCFullYear()+"/"
+      +(parseInt(d.getUTCMonth())+1)+"/"
+      +d.getUTCDate();
+    }
+  }
+
+})();

@@ -19,8 +19,16 @@ define([
         }
       });
       return this.queryDB(query);
+    },
+
+    /**
+    * Get a wallet by Id
+    * Get all payins and payouts related to this wallet and make the difference
+    */
+    getById : function(walletId){
+      let queryPayins = `SELECT amount FROM payins WHERE id=${id}`;
+      let queryPayouts = `SELECT amount FROM payouts WHERE id=${id}`;
     }
-// FIXME : Here we cannot send a HTTP response for both user and wallet, we have to choose
 
   });
 

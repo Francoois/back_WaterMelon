@@ -8,11 +8,11 @@ define([
   let PayinsClass = Object.create(datamodel);
   Object.assign(PayinsClass,{
 
-    table : 'payins',
+    table : 'payins'/*,
 
     create : function(req){
-      datamodel.create.call(this, req);
-    }
+      return datamodel.create.call(this, req);
+    }*/
 
   });
   return PayinsClass;
