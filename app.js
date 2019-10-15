@@ -19,7 +19,8 @@ requirejs([
 ],
 
 function(
-  express, bodyParser, bcrypt, db, users, cards, wallets,
+  express, bodyParser, bcrypt,
+  db, users, cards, wallets,
   payins, payouts, transfers,
 ) {
 
@@ -31,13 +32,22 @@ function(
   app.use(bodyParser.urlencoded({ extended: true }));
 
 ///LOGIN before connection middleware
-  app.get(prefix+'/login', function(req, res){});
+  app.post(prefix+'/login', function(req, res){
+    const email = req.body.email,
+    password = req.body.password;
+
+    users.authenticate(email,password)
+    .then(
+      (token)=>{res.status(200).json(token)}
+    )
+    .catch(()=>{res.sendStatus(404)});
+  });
 
   //
   app.use(function(req,res,next) {
     if ("x-auth-token" in req.headers) {
       let token = req.headers["x-auth-token"];
-      users.connect(token).then(
+      users.checkToken(token).then(
         (ok) => {
           if(ok) next();
           else res.sendStatus(404);
@@ -209,10 +219,6 @@ DELETE not required by specifications, and not possible yet because transfer not
   });*/
 
   app.listen(port, function(){
-    db.connect(function(err){
-      if (err) throw err;
-      console.log('Connection to database successful!');
-    });
     console.log("Example app listening on port "+port+"!");
   });
 

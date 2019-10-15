@@ -22,6 +22,10 @@ define(['mysql'], function(mysql){
                 port: "3306",
                 timezone: 'utc'
               });
+          this.db.connect(function(err){
+            if (err) throw err;
+            console.log('Connection to database successful!');
+          });
       }
   };
   MySingleton.getInstance = function(){

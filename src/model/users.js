@@ -1,9 +1,12 @@
 //users.js
 
-define(['data/dbConnector',
-'model/datamodel',
-'model/wallets'
-], function(db, datamodel, wallets){
+define([
+  'data/dbConnector',
+  'model/datamodel',
+  'model/wallets',
+  'jsonwebtoken',
+  'fs'
+], function(db, datamodel, wallets, jwt, fs){
 
   const table = 'users';
 
@@ -22,6 +25,14 @@ define(['data/dbConnector',
       );
     });
   }
+  function _getSecretKey(){
+    return fs.readFileSync('res/secret.key', 'utf8');
+  }
+  function _generateJWT(email){
+    const token = jwt.sign({ email : email}, _getSecretKey());
+    return token;
+  }
+
   let UserClass = Object.create(datamodel);
 
   Object.assign(UserClass,
@@ -61,12 +72,35 @@ define(['data/dbConnector',
       * Returns true if good authentication *token* is provided.
       * False if it's not
       */
-      connect : function(token){
+      checkToken : function(token){
+
+        const decoded = jwt.verify(token, _getSecretKey());
         return this.queryDB(
-        `SELECT * FROM users WHERE api_key='${token}'`)
-        .then(
+          `SELECT * FROM users WHERE email='${decoded.email}'`
+        ).then(
           (result) => {return Promise.resolve(result.length > 0);}
         );
+
+      },
+
+      authenticate : function(email, password){
+        return this.queryDB(
+          `SELECT * FROM users WHERE email='${email}'`)
+          .then(
+            (result) => {
+              if (result.length !== 1)
+              Promise.reject();
+              else {
+                if ( result[0].password === password){
+                  // TODO
+                  // create a token
+                  // update the token
+                  // send the token
+                  return _generateJWT(email);
+
+                }
+              }
+            });
       }
     });
   return UserClass;
