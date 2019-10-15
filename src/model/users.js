@@ -54,6 +54,19 @@ define(['data/dbConnector',
           ()=>{return this.queryDB(query);},
           ()=>{console.error("DELETE : delete user failed");}
         );
+      },
+      //FIXME / TODO : duplicated api_key is a fault
+      /**
+      * connect :
+      * Returns true if good authentication *token* is provided.
+      * False if it's not
+      */
+      connect : function(token){
+        return this.queryDB(
+        `SELECT * FROM users WHERE api_key='${token}'`)
+        .then(
+          (result) => {return Promise.resolve(result.length > 0);}
+        );
       }
     });
   return UserClass;

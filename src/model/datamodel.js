@@ -1,7 +1,4 @@
-//entity.js
-
-// This function needs clearer purpuse.
-// It should be a parent object of work object
+//datamodel.js
 
 define([
   'data/dbConnector',

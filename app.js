@@ -26,8 +26,26 @@ function(
 'use strict'
 
   const app = express(),
-  prefix = '/v1'; //TODO : prefix all routes with v1
+  prefix = '/v1',
+  port = 8000; //TODO : prefix all routes with v1
   app.use(bodyParser.urlencoded({ extended: true }));
+
+///LOGIN before connection middleware
+  app.get(prefix+'/login', function(req, res){});
+
+  //
+  app.use(function(req,res,next) {
+    if ("x-auth-token" in req.headers) {
+      let token = req.headers["x-auth-token"];
+      users.connect(token).then(
+        (ok) => {
+          if(ok) next();
+          else res.sendStatus(404);
+        }
+      )
+      .catch(()=>{res.sendStatus(500)});
+    }
+  });
 
   //////// Users route
   app.get(prefix+'/users', function(req, res) {
@@ -190,14 +208,15 @@ DELETE not required by specifications, and not possible yet because transfer not
     );
   });*/
 
-  app.listen(8000, function(){
+  app.listen(port, function(){
     db.connect(function(err){
       if (err) throw err;
       console.log('Connection to database successful!');
     });
-    console.log('Example app listening on port 3000!');
+    console.log("Example app listening on port "+port+"!");
   });
 
 });
 
 // Deadline : 27 Octobre - Dimanche 23h59
+// TODO : les bonnes réponses
