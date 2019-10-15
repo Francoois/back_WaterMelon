@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author_name" : "François",
   "author_surname" : "LOUIS",
-  "description": "watermelon app backend",
+  "description": "François LOUIS - watermelon app backend",
   "main": "app.js",
   "dependencies": {
     "bcrypt": "^3.0.6",
