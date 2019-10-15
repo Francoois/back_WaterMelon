@@ -1,6 +1,8 @@
 {
   "name": "back_watermelon",
   "version": "1.0.0",
+  "author_name" : "François",
+  "author_surname" : "LOUIS",
   "description": "watermelon app backend",
   "main": "app.js",
   "dependencies": {
