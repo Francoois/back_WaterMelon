@@ -4,7 +4,7 @@ var tools = require('./tools.js');
 
 let request = require("request");
 let cardsTypes = ['visa', 'master_card', 'american_express', 'union_pay', 'jcb'];
-let base_url = `http://localhost:8000`;
+let base_url = `http://localhost:8000/v1`;
 let attributes = null;
 
 let createOne = function() {
@@ -26,6 +26,7 @@ let createOne = function() {
       request.post(
         attributes,
         function(error, response, body) {
+          if (error) throw new Error();
           let newId = parseInt(response.body);
           expect(response.statusCode).toBe(200);
           resolve(newId);
@@ -74,7 +75,7 @@ describe("TEST cards CRUD\n", function() {
                 {
                   method : 'PUT',
                   url : url,
-                  form : { attribute : "last_4", value : "7357" }
+                  form : { last_4 : "7357" }
                 },
                 function(error, response, body){
                   expect(response.statusCode).toBe(200);

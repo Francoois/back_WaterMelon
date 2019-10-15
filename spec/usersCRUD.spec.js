@@ -1,7 +1,7 @@
 'use strict'
 
 var request = require("request");
-let base_url = `http://localhost:8000`;
+let base_url = `http://localhost:8000/v1`;
 let userAttributes = {
   header : {'Content-Type' : 'application/x-www-form-urlencoded'},
   url : base_url+"/users",
@@ -84,7 +84,7 @@ describe("Users API OK \n", function() {
               {
                 method : 'PUT',
                 url : url,
-                form : { attribute : "password", value : "tasvucamarche?" }
+                form : { password : "tasvucamarche?" }
               },
               function(error, response, body){
             expect(response.statusCode).toBe(200);

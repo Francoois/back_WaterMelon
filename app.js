@@ -30,14 +30,14 @@ function(
   app.use(bodyParser.urlencoded({ extended: true }));
 
   //////// Users route
-  app.get('/users', function(req, res) {
+  app.get(prefix+'/users', function(req, res) {
     users.getAll().then(
       (result)=>{res.status(200).json(result)},
       ()=>{res.sendStatus(500)}
     );
   });
 
-  app.post('/users', function(req, res) {
+  app.post(prefix+'/users', function(req, res) {
     users.create(req).then(
         (userId)=>{res.status(200).json(userId);}
       ).catch(
@@ -47,7 +47,7 @@ function(
       );
   });
 
-  app.get('/users/:id(\\d+)', function(req, res){
+  app.get(prefix+'/users/:id(\\d+)', function(req, res){
     users.getById(req.params.id).then(
       (result)=>{res.status(200).json(result)}
     ).catch(
@@ -55,11 +55,10 @@ function(
     );
   });
 
-  app.put('/users/:id(\\d+)', function(req, res){
+  app.put(prefix+'/users/:id(\\d+)', function(req, res){
     users.update(
       req.params.id,
-      req.body.attribute,
-      req.body.value
+      req.body
     ).then(
       ()=>{res.sendStatus(200)}
     ).catch(()=>res.sendStatus(500));
@@ -68,7 +67,7 @@ function(
   /**
   * Handles Users AND Wallet DELETE
   */
-  app.delete('/users/:id(\\d+)', function(req, res){
+  app.delete(prefix+'/users/:id(\\d+)', function(req, res){
     users.deleteById(req.params.id).then(
       ()=>{res.sendStatus(200)}
     ).catch(()=>res.sendStatus(500));
@@ -76,20 +75,20 @@ function(
 
 
   ///////////////////////// Cards Route
-  app.get('/cards', function(req, res) {
+  app.get(prefix+'/cards', function(req, res) {
     cards.getAll().then(
       (result)=>{res.status(200).json(result)},
       ()=>{res.sendStatus(500)}
     );
   });
-  app.get('/cards/:id(\\d+)', function(req, res) {
+  app.get(prefix+'/cards/:id(\\d+)', function(req, res) {
     cards.getById(req.params.id).then(
       (result)=>{res.status(200).json(result)}
     ).catch(
       ()=>{res.sendStatus(400)}
     );
   });
-  app.post('/cards', function(req,res){
+  app.post(prefix+'/cards', function(req,res){
     // TODO : get card ID after insert ?
     cards.create(req).then(
         (newId)=>{res.status(200).json(newId);}
@@ -97,23 +96,22 @@ function(
         ()=>{ res.sendStatus(500);}
       );
   });
-  app.put('/cards/:id(\\d+)', function(req,res){
+  app.put(prefix+'/cards/:id(\\d+)', function(req,res){
     cards.update(
       req.params.id,
-      req.body.attribute,
-      req.body.value
+      req.body
     ).then(
       ()=>{res.sendStatus(200);},
       ()=>{res.sendStatus(500);} );
   });
-  app.delete('/cards/:id(\\d+)', function(req, res){
+  app.delete(prefix+'/cards/:id(\\d+)', function(req, res){
     cards.deleteById(req.params.id).then(
       ()=>{res.sendStatus(200);},
       ()=>{res.sendStatus(500);} );
     }
   );
 
-  app.get('/wallets', function(req, res) {
+  app.get(prefix+'/wallets', function(req, res) {
     wallets.getAll().then(
       (result)=>{res.status(200).json(result)},
       ()=>{res.sendStatus(500)}
@@ -170,6 +168,7 @@ function(
       );
   });
 
+
 /*
 DELETE not required by specifications, and not possible yet because transfer not linked to payins/payout once created
   app.delete('/transfers', function (req,res){
@@ -189,4 +188,4 @@ DELETE not required by specifications, and not possible yet because transfer not
 
 });
 
-// Deadline : 20 Octobre
+// Deadline : 27 Octobre - Dimanche 23h59

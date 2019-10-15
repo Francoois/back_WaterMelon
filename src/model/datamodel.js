@@ -56,8 +56,8 @@ define(['data/dbConnector'], function(db, datamodel){
     let query = `SELECT * FROM ${this.table}`;
     return queryDB(query);
   },
-  update = function(id, attribute, value){
-    const query = this.updateQueryBuilder(this.table, id, attribute, value);
+  update = function(id, putData){
+    const query = this.updateQueryBuilder(id, putData);
     return this.queryDB(query);
   },
   getById = function(id){
@@ -95,8 +95,7 @@ define(['data/dbConnector'], function(db, datamodel){
     * Create an INSERT query
     */
   let insertQueryBuilder = function(req){
-    if(this.table ==undefined)
-    throw new Error();
+    if(this.table ==undefined) throw new Error();
 
     let table = this.table;
 
@@ -151,17 +150,31 @@ define(['data/dbConnector'], function(db, datamodel){
       /**
       * Create an UPDATE query for the item type (table) specified
       */
-      updateQueryBuilder : function(table, id, changedAttribute, value){
+      updateQueryBuilder : function(id, putData){
+        let table = this.table;
+        if(table == undefined || ("id" in putData)) throw new Error();
+
         let queryParam = `UPDATE ${table} SET `;
         let queryCondition = ` WHERE id=${id}`;
 
-            if (attributes[this.table].nonStrParams.includes(changedAttribute)){
-              queryParam += (changedAttribute+"="+value);
-            } else if (attributes[this.table].strParams.includes(changedAttribute)) {
-              queryParam += (changedAttribute+"="+`'${value}'`);
-            } else console.error("Unexpected parameter");
+        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+          for (let param of params){
 
-            return queryParam+queryCondition;
+            if(putData.hasOwnProperty(param)){
+
+              let value = putData[param];
+              if (attributes[this.table].nonStrParams.includes(param)){
+                queryParam += (param+"="+value);
+              } else if (attributes[this.table].strParams.includes(param)) {
+                queryParam += (param+"="+`'${value}'`);
+              } else console.error("Unexpected parameter");
+              queryParam+=", ";
+            }
+
+          }
+        }
+        queryParam = queryParam.slice(0, -2);
+        return queryParam+queryCondition;
       }
   }
 });
