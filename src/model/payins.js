@@ -1,19 +1,15 @@
 //payins.js
 
 define([
-  'model/datamodel'
-], function (datamodel){
+  'model/moneyFlow'
+], function (moneyFlow){
   'use strict'
 
-  let PayinsClass = Object.create(datamodel);
-  Object.assign(PayinsClass,{
+  let Payins = Object.create(moneyFlow);
+  Object.assign(Payins,{
 
-    table : 'payins'/*,
-
-    create : function(req){
-      return datamodel.create.call(this, req);
-    }*/
+    table : 'payins'
 
   });
-  return PayinsClass;
+  return Payins;
 });

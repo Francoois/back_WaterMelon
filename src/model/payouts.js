@@ -1,15 +1,15 @@
 //payouts.js
 
 define([
-  'model/datamodel'
-], function (datamodel){
+  'model/moneyFlow'
+], function (moneyFlow){
   'use strict'
 
-  let PayoutsClass = Object.create(datamodel);
-  Object.assign(PayoutsClass,{
+  let Payouts = Object.create(moneyFlow);
+  Object.assign(Payouts,{
 
     table : 'payouts'
 
   });
-  return PayoutsClass;
+  return Payouts;
 });

@@ -44,7 +44,7 @@ define(['data/dbConnector'], function(db, datamodel){
         if (err){
           //throw err
           console.error("\n    ===> WaterMelonDB Error :" + err);
-          reject();
+          reject(err);
         }else{
           console.log("success");
           resolve(result);

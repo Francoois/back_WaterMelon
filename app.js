@@ -20,7 +20,7 @@ requirejs([
 
 function(
   express, bodyParser, bcrypt, db, users, cards, wallets,
-  payins, payouts, transfers
+  payins, payouts, transfers,
 ) {
 
 'use strict'
@@ -89,7 +89,6 @@ function(
     );
   });
   app.post(prefix+'/cards', function(req,res){
-    // TODO : get card ID after insert ?
     cards.create(req).then(
         (newId)=>{res.status(200).json(newId);}
       ).catch(
@@ -110,13 +109,6 @@ function(
       ()=>{res.sendStatus(500);} );
     }
   );
-
-  app.get(prefix+'/wallets', function(req, res) {
-    wallets.getAll().then(
-      (result)=>{res.status(200).json(result)},
-      ()=>{res.sendStatus(500)}
-    );
-  });
 
   app.get(prefix+'/payins', function(req, res) {
     payins.getAll().then(
@@ -166,6 +158,26 @@ function(
       ).catch(
         ()=>{ res.sendStatus(500);}
       );
+  });
+
+  app.get(prefix+'/wallets', function(req, res) {
+    //TODO : check if admin
+    wallets.getAll().then(
+      (result)=>{res.status(200).json(result)},
+      ()=>{res.sendStatus(500)}
+    );
+  });
+  app.get(prefix+'/wallets/:id(\\d+)', function(req,res){
+    wallets.getById(req.params.id).then(
+      (result)=>{res.status(200).json(
+        {
+          "id" : req.params.id,
+          "result" : result
+        });
+      },
+      ()=>{
+        res.sendStatus(500)}
+    );
   });
 
 

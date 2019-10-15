@@ -10,11 +10,26 @@ define([
   'use strict'
 
   //TODO : check balance before transfer
-  
-  let TransfersClass = Object.create(datamodel);
-  Object.assign(TransfersClass,{
 
-    table : 'transfers'/*,
+  let Transfers = Object.create(datamodel);
+  Object.assign(Transfers,{
+
+    table : 'transfers',
+
+    getByCreditedWalletId : function(wID){
+      console.log("INSIDE getCRED");
+      return datamodel.queryDB(
+        `SELECT * FROM ${this.table} WHERE credited_wallet_id=${wID}`
+      );
+    },
+
+    getByDebitedWalletId : function(wID){
+      console.log("INSIDE getDEB");
+      return datamodel.queryDB(
+        `SELECT * FROM ${this.table} WHERE debited_wallet_id=${wID}`
+      );
+    }
+    /*,
 
     create : function(req){
       const query = this.insertQueryBuilder(req);
@@ -59,5 +74,5 @@ define([
     }
 
   });
-  return TransfersClass;
+  return Transfers;
 });
