@@ -168,7 +168,7 @@ function(
     );
   });
   app.get(prefix+'/wallets/:id(\\d+)', function(req,res){
-    wallets.getById(req.params.id).then(
+    wallets.getBalanceById(req.params.id).then(
       (result)=>{res.status(200).json(
         {
           "id" : req.params.id,

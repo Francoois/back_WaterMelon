@@ -3,35 +3,11 @@
 // This function needs clearer purpuse.
 // It should be a parent object of work object
 
-define(['data/dbConnector'], function(db, datamodel){
+define([
+  'data/dbConnector',
+  'data/dataIndex'
+], function(db, attributes){
   'use strict'
-
-  const attributes = {
-    users : {
-      strParams : ["first_name","last_name","email","password","api_key"],
-      nonStrParams : ["id","is_admin"]
-    },
-    cards : {
-      strParams : ["brand","expired_at","last_4"],
-      nonStrParams : ["id", "user_id"]
-    },
-    wallets : {
-      strParams : [],
-      nonStrParams : ["user_id"]
-    },
-    payins : {
-      strParams : [],
-      nonStrParams : ["wallet_id", "amount"]
-    },
-    payouts : {
-      strParams : [],
-      nonStrParams : ["wallet_id", "amount"]
-    },
-    transfers : {
-      strParams : [],
-      nonStrParams : ["debited_wallet_id","credited_wallet_id","amount"]
-    }
-  }
 
   /**
   * Returns a Promise to execute the query

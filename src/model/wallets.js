@@ -10,7 +10,7 @@ define([
   db, model, payins, payouts, transfers
 ){
   'use strict'
-  
+
   /**
   *
   */
@@ -41,7 +41,7 @@ define([
     * Get a wallet by Id
     * Get all payins and payouts related to this wallet and make the difference
     */
-    getById : function(walletId){
+    getBalanceById : function(walletId){
 
       return new Promise( function(resolve, reject){
         let result = 0,
