@@ -5,14 +5,14 @@ define(['mysql'], function(mysql){
 
   let instance = null;
 
-  function MySingleton(){
+  function dbConnectSingleton(){
     if(instance !== null){
-        throw new Error("Cannot instantiate more than one MySingleton, use MySingleton.getInstance()");
+        throw new Error("Cannot instantiate more than one dbConnectSingleton, use dbConnectSingleton.getInstance()");
     }
 
     this.initialize();
   }
-  MySingleton.prototype = {
+  dbConnectSingleton.prototype = {
       initialize: function(){
           this.db = mysql.createConnection({
                 host: "localhost",
@@ -28,15 +28,15 @@ define(['mysql'], function(mysql){
           });
       }
   };
-  MySingleton.getInstance = function(){
+  dbConnectSingleton.getInstance = function(){
       // summary:
       //      Gets an instance of the singleton. It is better to use
       if(instance === null){
-          instance = new MySingleton();
+          instance = new dbConnectSingleton();
       }
       return instance;
   };
 
-  return MySingleton.getInstance().db;
+  return dbConnectSingleton.getInstance().db;
 
 });

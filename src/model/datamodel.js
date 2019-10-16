@@ -148,6 +148,11 @@ define([
         }
         queryParam = queryParam.slice(0, -2);
         return queryParam+queryCondition;
+      },
+      getByUserId : function(userId){
+        return this.queryDB(
+          `SELECT * FROM ${this.table} WHERE user_id=${userId}`
+        );
       }
   }
 });

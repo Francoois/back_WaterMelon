@@ -7,7 +7,9 @@ define([
 
   let MoneyFlow = Object.create(datamodel);
   Object.assign(MoneyFlow,{
+
     getAmountByWalletID : function(walletId){
+
       return datamodel.queryDB(`SELECT * FROM ${this.table} WHERE wallet_id=${walletId}`)
       .then(
         (queryResult) => {
@@ -21,6 +23,7 @@ define([
         () => { console.error("Error fetching "+this.table); }
       );
     }
+
   });
   return MoneyFlow;
 });

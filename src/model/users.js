@@ -2,11 +2,12 @@
 
 define([
   'data/dbConnector',
+  'util/authenticator',
   'model/datamodel',
-  'model/wallets',
-  'jsonwebtoken',
-  'fs'
-], function(db, datamodel, wallets, jwt, fs){
+  'model/wallets'
+], function(
+  db, auth, datamodel, wallets
+){
 
   const table = 'users';
 
@@ -24,13 +25,6 @@ define([
         }
       );
     });
-  }
-  function _getSecretKey(){
-    return fs.readFileSync('res/secret.key', 'utf8');
-  }
-  function _generateJWT(email){
-    const token = jwt.sign({ email : email}, _getSecretKey());
-    return token;
   }
 
   let UserClass = Object.create(datamodel);
@@ -66,21 +60,18 @@ define([
           ()=>{console.error("DELETE : delete user failed");}
         );
       },
-      //FIXME / TODO : duplicated api_key is a fault
+
       /**
       * connect :
       * Returns true if good authentication *token* is provided.
       * False if it's not
       */
-      checkToken : function(token){
-
-        const decoded = jwt.verify(token, _getSecretKey());
+      isValidToken : function(token){
         return this.queryDB(
-          `SELECT * FROM users WHERE email='${decoded.email}'`
+          `SELECT * FROM users WHERE email='${auth.readJWT(token).email}'`
         ).then(
           (result) => {return Promise.resolve(result.length > 0);}
-        );
-
+        ).catch( () => { return Promise.reject(400)}); //400 : Bad Request
       },
 
       authenticate : function(email, password){
@@ -88,20 +79,18 @@ define([
           `SELECT * FROM users WHERE email='${email}'`)
           .then(
             (result) => {
-              if (result.length !== 1)
-              Promise.reject();
-              else {
-                if ( result[0].password === password){
+              if (result.length !== 1 || result[0].password !== password)
+              return Promise.reject(404);
+              else{
                   // TODO
                   // create a token
                   // update the token
                   // send the token
-                  return _generateJWT(email);
-
+                  return auth.generateJWT(result[0]);
                 }
-              }
             });
       }
+
     });
   return UserClass;
 
