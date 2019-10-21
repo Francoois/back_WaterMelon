@@ -35,7 +35,13 @@ define([
       },
 
       readJWT : function(token){
-        const decoded = jwt.verify(token, this.secretKey);
+        let decoded = null;
+        try {
+          decoded = jwt.verify(token, this.secretKey);
+        }
+        catch (error){
+          return undefined;
+        }
         return decoded;
       },
 
@@ -44,7 +50,10 @@ define([
       },
 
       getTokenUserId : function(token){
-        return parseInt(this.readJWT(token).user_id);
+        const decoded = this.readJWT(token);
+        if( decoded != undefined && ('user_id' in decoded) && decoded.user_id !== undefined)
+          return parseInt(decoded.user_id);
+        else return undefined;
       }
   };
   AuthSingleton.getInstance = function(){

@@ -13,3 +13,5 @@ define([
   });
   return Payins;
 });
+
+// TODO : Si pas de payins, le 404 du queryDB n'est pas une erreur, l'utilisateur n'en a jamais fait 

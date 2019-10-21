@@ -21,14 +21,15 @@ requirejs([
   'model/transfers',
 
   'api/adminRouter',
-  'api/userRouter'
+  'api/userRouter',
+  'api/visitorRouter'
 ],
 
 function(
   express, bodyParser, bcrypt,
   db, auth,
   users, cards, wallets, payins, payouts, transfers,
-  adminRouter, userRouter
+  adminRouter, userRouter, visitorRouter
 ) {
 
 'use strict'
@@ -37,37 +38,63 @@ function(
   prefix = '/v1',
   port = 8000;
 
+  const debug = true;
+  process.countCall = 0;
+
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.use ((rq,rs,next) => { console.log("\nV V V"); next();})
 
-  // LOGIN before connection middleware
-  app.post(prefix+'/login', function(req, res){
-    const email = req.body.email,
-    password = req.body.password;
+  if(debug==true){
+    app.use ((req,res,next) => {
+      process.countCall++;
+      if (process.countCall > 8) process.exit(0);
+      console.log('V V V\n');
+      console.log(process.countCall);
+      next();
+    },function(req, res, next) {
+        console.log('Request URL:', req.originalUrl, '\t params : ',JSON.stringify(req.params));
+        console.log('Request Type:', req.method);
+        console.log('Req headers : ',req.headers);
+        console.log('body:', req.body);
+        next();
+      }
+    );
+  }
 
-    users.authenticate(email,password)
-    .then(
-      (token)=>{res.status(200).json(token)}
-    )
-    .catch((code)=>{res.sendStatus(code)});
-  });
+  app.use(prefix, visitorRouter);
 
   // JWT - call appropriate router
   app.use(function(req,res,next) {
     const token = req.headers["x-auth-token"];
 
-    if ( ("x-auth-token" in req.headers) && users.isValidToken(token) ){
-      if(_isAdmin(req) ){
-        console.log("adminRouter");
-        app.use(prefix,adminRouter);
-        next();
-      } else {
-        console.log("userRouter");
-        app.use(prefix,userRouter);
-        next();
-      }
+    if (token == undefined) {
+      res.sendStatus(401);
+      return;
     }
-    else res.sendStatus(401); // Unauthorized
+
+    users.isValidToken(token)
+    .then(
+      (tokenOk)=>{
+
+        if (tokenOk){
+          if( auth.isAdminToken(token) ){
+            console.log("adminRouter");
+            app.use(prefix,adminRouter);
+            next();
+          } else {
+            console.log("userRouter");
+            app.use(prefix,userRouter);
+            next();
+          }
+        } else {
+          res.status(401).send(token);
+        }
+
+      }
+    ).catch(
+      ()=> {
+        res.sendStatus(401); // Unauthorized //* Verifying firewall when missing header... OK
+      }
+    )
   });
 
 // FIXME : don't check if authenticated but if user_id param is ok, irrelevant
@@ -76,13 +103,10 @@ function(
     const id = parseInt(req.query["user_id"]);
     return ( ('user_id' in req.query) && (auth.getTokenUserId(token)===id) ) ? true : false;
   }
-  function _isAdmin(req){
-    return auth.isAdminToken(req.headers["x-auth-token"])===true;
-  }
 
 
   app.listen(port, function(){
-    console.log("Example app listening on port "+port+"!");
+    console.log("Watermelon listening on port "+port+"!");
   });
 
 });

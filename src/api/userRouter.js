@@ -1,15 +1,58 @@
 define([
   'express',
 
+  'util/authenticator',
+
   'model/users',
   'model/cards'
 
-], function( express, users, cards ){
+], function(
+  express,
+  auth,
+  users, cards ){
 
   const userRouter = express.Router();
 
+  /**
+   * Connected user : gets only himself
+   */
   userRouter.get('/users', function(req, res) {
-    res.sendStatus(401); // Unauthorized
+    //res.sendStatus(200); // Forbidden
+    users.getOne(_getJWTUser(req)).then(
+      (result)=>{
+        res.status(200).send([result]); //* Verifying firewall... OK
+      },
+      ()=>{res.sendStatus(500)}
+    );
+  });
+  // No POST for now
+
+  function _getJWTUser(req){
+    return auth.getTokenUserId(req.headers["x-auth-token"]);
+  }
+
+  userRouter.get('/users/:id(\\d+)', function(req, res){
+    const id = parseInt(req.params.id);
+
+    if(thisUserId===id){
+
+      users.getOne(req.params.id).then(
+        (result)=>{res.status(200).send(result)}
+      ).catch(
+        ()=>{res.sendStatus(403)}
+      );
+
+    } else res.sendStatus(403); //Forbidden
+
+  });
+
+  userRouter.put('/users/:id(\\d+)', function(req, res){
+    users.update(
+      req.params.id,
+      req.body
+    ).then(
+      ()=>{res.sendStatus(200)}
+    ).catch(()=>res.sendStatus(500));
   });
 
   // TODO ...

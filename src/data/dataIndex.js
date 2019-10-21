@@ -8,7 +8,8 @@ define([
     {
       users : {
         strParams : ["first_name","last_name","email","password","api_key"],
-        nonStrParams : ["id","is_admin"]
+        nonStrParams : ["id","is_admin"],
+        optional : ['id', 'api_key', 'is_admin']
       },
       cards : {
         strParams : ["brand","expired_at","last_4"],

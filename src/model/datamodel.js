@@ -16,7 +16,7 @@ define([
       db.query(query, function(err, result, fields) {
         if (err){
           //throw err
-          console.error("\n    ===> WaterMelonDB Error :" + err);
+          console.error("\n    ===> WaterMelonDB Error :",err);
           reject(err);
         }else{
           console.log("success");
@@ -33,6 +33,9 @@ define([
     const query = this.updateQueryBuilder(id, putData);
     return this.queryDB(query);
   },
+  /**
+   * id : integer
+   */
   getById = function(id){
     const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
     return this.queryDB(query);
@@ -68,7 +71,7 @@ define([
     * Create an INSERT query
     */
   let insertQueryBuilder = function(req){
-    if(this.table ==undefined) throw new Error();
+    if(this.table == undefined) throw new Error();
 
     let table = this.table;
 
@@ -88,9 +91,9 @@ define([
               queryValues += `${req.body[param]},`;
 
           }
-          else if(param != "id") {
+          else if( !param in attributes[table].optional ) {
             //res.send("Error, missing parameter in request body");
-            throw new Error("Missing parameter in request body : " + JSON.stringify(req.body));
+            throw new Error("Missing parameter <<"+param+">> in request body : " + JSON.stringify(req.body));
             return;
           }
         }
@@ -153,6 +156,17 @@ define([
         return this.queryDB(
           `SELECT * FROM ${this.table} WHERE user_id=${userId}`
         );
-      }
+      },
+      /*
+      getOne : function getObj(tuple) {
+        let object = Object.create(this.table);
+
+        for (let params of [attributes[this.table].strParams, attributes[this.table].nonStrParams]) {
+          for (let param of params){
+            object[param] = tuple
+          }
+        }
+
+      }*/
   }
 });
