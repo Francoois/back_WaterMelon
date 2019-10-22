@@ -11,8 +11,9 @@ define([
     table : 'cards',
 
     create : function(req){
-      if(!this.isParamObjectOk(req))
+      if(!this.isParamObjectOk(req.body))
         return Promise.reject(400);
+
       const query = this.insertQueryBuilder(req);
       return this.queryDB(query
       ).then((result)=>{

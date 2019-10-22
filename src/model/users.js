@@ -4,9 +4,10 @@ define([
   'data/dbConnector',
   'util/authenticator',
   'model/datamodel',
-  'model/wallets'
+  'model/wallets',
+  'model/cards'
 ], function(
-  db, auth, datamodel, wallets
+  db, auth, datamodel, wallets, cards
 ){
 
   const table = 'users';

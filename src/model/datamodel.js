@@ -172,15 +172,26 @@ define([
         // Check for all model attributes
         for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
           for (let param of params){
+
+            let notUserDefined = (attributes[table].notUserDefined.indexOf(param) != -1);
+            let isOptional = (attributes[table].optional.indexOf(param) != -1);
+
             // Is the attribute in parameters ?
             if( paramObj.hasOwnProperty(param) ){
               // Is it forbidden to provide ?
-              if(param in attributes[table].notUserDefined) return false;
+              if(notUserDefined){
+                console.log("notok : notUserDefined : ",param);
+                return false;
+              }
               // Is it authorized not to be here ?
-            } else if( (param in attributes[table].optional)
-            || (param in attributes[table].notUserDefined) ) {
+            } else if( isOptional || notUserDefined ) {
+              console.log("optional or notUserDefined: ",param);
               continue;
-            } else return false;
+            } else {
+              console.log("notok : parameter not found : ",param);
+              return false;
+            }
+
           }
         }
         return true;
@@ -189,7 +200,7 @@ define([
       deleteByUserId : function deleteByUserId(user_id){
         let query = `DELETE FROM ${this.table} WHERE user_id=${user_id}`;
         return this.queryDB(query);
-      }
+      },
 
       /*getById works instead
       getOne : function getObj(id) {
