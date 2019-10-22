@@ -46,6 +46,9 @@ define([
       return this.queryDB(query);
     }
   },
+  /**
+   * Deprecated : use result.insertId instead !!!
+   */
   _getLastInserted = function(){
     let table = this.table;//FIXME : cannot keep this in Promise
     return new Promise( function(resolve, reject){
@@ -71,6 +74,8 @@ define([
     * Create an INSERT query
     */
   let insertQueryBuilder = function(req){
+
+    //TODO : simplify this mess with isParamObjectOk
     if(this.table == undefined) throw new Error();
 
     let table = this.table;
@@ -91,7 +96,8 @@ define([
               queryValues += `${req.body[param]},`;
 
           }
-          else if( !param in attributes[table].optional ) {
+          else if( (param in attributes[table].optional)
+        || (param in attributes[table].notUserDefined) ) {
             //res.send("Error, missing parameter in request body");
             throw new Error("Missing parameter <<"+param+">> in request body : " + JSON.stringify(req.body));
             return;
@@ -117,6 +123,9 @@ define([
 
     getById : getById,
 
+    /**
+     * Deprecated : use result.insertId instead !!!
+     */
     getLastInserted : _getLastInserted,
 
     deleteById : deleteById,
@@ -157,9 +166,35 @@ define([
           `SELECT * FROM ${this.table} WHERE user_id=${userId}`
         );
       },
-      /*
-      getOne : function getObj(tuple) {
-        let object = Object.create(this.table);
+
+      isParamObjectOk : function isParamObjectOk(paramObj){
+        const table = this.table;
+        // Check for all model attributes
+        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+          for (let param of params){
+            // Is the attribute in parameters ?
+            if( paramObj.hasOwnProperty(param) ){
+              // Is it forbidden to provide ?
+              if(param in attributes[table].notUserDefined) return false;
+              // Is it authorized not to be here ?
+            } else if( (param in attributes[table].optional)
+            || (param in attributes[table].notUserDefined) ) {
+              continue;
+            } else return false;
+          }
+        }
+        return true;
+      },
+
+      deleteByUserId : function deleteByUserId(user_id){
+        let query = `DELETE FROM ${this.table} WHERE user_id=${user_id}`;
+        return this.queryDB(query);
+      }
+
+      /*getById works instead
+      getOne : function getObj(id) {
+        let object = {};
+        const tuple = this.getById(id);
 
         for (let params of [attributes[this.table].strParams, attributes[this.table].nonStrParams]) {
           for (let param of params){

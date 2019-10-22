@@ -22,7 +22,7 @@ define([
       (result)=>{
         res.status(200).send([result]); //* Verifying firewall... OK
       },
-      ()=>{res.sendStatus(500)}
+      ()=>{res.sendStatus(400)}
     );
   });
   // No POST for now
@@ -53,6 +53,16 @@ define([
     ).then(
       ()=>{res.sendStatus(200)}
     ).catch(()=>res.sendStatus(500));
+  });
+
+  userRouter.post('/cards', function(req,res){
+    cards.create(req).then(
+        (newCard)=>{
+          console.log('newCard : ',newCard);
+          res.status(200).send(newCard);}
+      ).catch(
+        ()=>{ res.sendStatus(400);}
+      );
   });
 
   // TODO ...

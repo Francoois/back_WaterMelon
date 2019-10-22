@@ -64,7 +64,11 @@ define([
       deleteById : function(id){
         let query = `DELETE FROM ${this.table} WHERE id=${id}`;
 
-        return wallets.deleteByUserId(id).then(
+        return Promise.all([
+          wallets.deleteByUserId(id),
+          cards.deleteByUserId(id)
+        ])
+        .then(
           ()=>{return this.queryDB(query);},
           ()=>{console.error("DELETE : delete wallet failed");}
         );

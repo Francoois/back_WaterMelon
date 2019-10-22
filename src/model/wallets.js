@@ -72,11 +72,6 @@ define([
          .catch( ()=>{ console.error("Failed fetching amount");});
       }
     );
-  },
-
-  deleteByUserId : function deleteByUserId(user_id){
-    let query = `DELETE FROM ${this.table} WHERE user_id=${user_id}`;
-    return this.queryDB(query);
   }
 
   });

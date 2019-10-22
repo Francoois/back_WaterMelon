@@ -11,11 +11,17 @@ define([
     table : 'cards',
 
     create : function(req){
+      if(!this.isParamObjectOk(req))
+        return Promise.reject(400);
       const query = this.insertQueryBuilder(req);
       return this.queryDB(query
-      ).then(()=>{ let leDer = this.getLastInserted();
-      return leDer;
-    });
+      ).then((result)=>{
+
+        return this.getById(result.insertId)
+        .then (
+          (result) => { return Promise.resolve(result[0]);}
+        );
+      });
     }
 
   });
