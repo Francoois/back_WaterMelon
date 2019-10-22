@@ -134,6 +134,24 @@ define([
           console.log("ERROR, returned code :",code);
           return Promise.reject(code);
         });
+      },
+
+      hasCard : function hasCard(user_id, card_id){
+
+        return cards.getById(card_id).then(
+          (result) => {
+
+            if(result.length===1){
+
+              if(result[0].user_id == user_id)
+                return true;
+              else
+                return false;
+            }
+            else return false;
+
+          }
+        ).catch( ()=>{ return 500; } )
       }
 
     });

@@ -64,6 +64,81 @@ define([
         ()=>{ res.sendStatus(400);}
       );
   });
+  userRouter.get('/cards', function(req, res) {
+    const user_id = _getJWTUser(req);
+
+    cards.getByUserId(user_id).then(
+      (result)=>{res.status(200).send(result)},
+      ()=>{res.sendStatus(500)}
+    );
+  });
+  userRouter.get('/cards/:id(\\d+)', function(req, res) {
+
+    const card_id = req.params.id;
+    const user_id = _getJWTUser(req);
+    users.hasCard(user_id,card_id).then(
+      (hasCard) => {
+        if(hasCard===true){
+          cards.getById(card_id).then(
+            (result)=>{
+              console.log("RES CARD GET :",result);
+              res.status(200).send(result[0])
+            }
+          ).catch(
+            (code)=>{res.sendStatus(code)}
+          );
+        } else res.sendStatus(404);
+
+      }
+    ).catch(
+      (code)=>{res.sendStatus(code);}
+    );
+  });
+  userRouter.put('/cards/:id(\\d+)', function(req,res){
+    const card_id = req.params.id;
+    const user_id = _getJWTUser(req);
+
+    users.hasCard(user_id,card_id).then(
+      (hasCard) => {
+        if(hasCard === true){
+
+          cards.update(
+            card_id,
+            req.body
+          ).then(
+            (newCard)=>{res.status(200).send(newCard[0]);},
+            ()=>{res.sendStatus(400);}
+          );
+
+        } else {
+          res.sendStatus(404);
+        }
+      }
+    ).catch(
+      (code)=>{res.sendStatus(code)}
+    );
+  });
+  userRouter.delete('/cards/:id(\\d+)', function(req, res){
+    const card_id = req.params.id;
+    const user_id = _getJWTUser(req);
+
+    users.hasCard(user_id, card_id).then(
+      (hasCard)=>{
+        if(hasCard === true){
+
+          cards.deleteById(req.params.id)
+          .then(
+            (answer)=>{res.status(200).send('OK');},
+            ()=>{res.sendStatus(500);}
+          );
+        } else {
+          res.sendStatus(404);
+        }
+      }
+    ).catch(
+      (code)=>{res.sendStatus(code)}
+    );
+  });
 
   // TODO ...
   userRouter.get('/wallets/:id(\\d+)', function(req,res){
@@ -78,12 +153,16 @@ define([
         (code)=>{res.sendStatus(code)}
       );
 
-    } /*else if (_isAdmin(token)) {
-      wallets.getBalanceById(req.params.id).then(
-        (result)=>{res.status(200).json(result);},
-        ()=>{ res.sendStatus(500)}
-      );
-    }*/
+    }
+  });
+  userRouter.get('/wallets', function(req, res) {
+    //res.sendStatus(200); // Forbidden
+    wallets.getByUserId(_getJWTUser(req)).then(
+      (result)=>{
+        res.status(200).send([result]); //* Verifying firewall... OK
+      },
+      ()=>{res.sendStatus(400)}
+    );
   });
 
   return userRouter;

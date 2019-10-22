@@ -29,10 +29,6 @@ define([
     let query = `SELECT * FROM ${this.table}`;
     return queryDB(query);
   },
-  update = function(id, putData){
-    const query = this.updateQueryBuilder(id, putData);
-    return this.queryDB(query);
-  },
   /**
    * id : integer
    */
@@ -119,7 +115,14 @@ define([
 
     queryDB : queryDB,
 
-    update : update,
+    update : function update(id, putData){
+      const query = this.updateQueryBuilder(id, putData);
+      return this.queryDB(query).then(
+        ()=>{
+          return this.getById(id);  
+        }
+      ).catch(()=>{return 400});
+    },
 
     getById : getById,
 
