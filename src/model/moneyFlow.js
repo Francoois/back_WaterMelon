@@ -27,6 +27,13 @@ define([
       );
     },
 
+    getByWalletID : function getByWalletID(walletId){
+
+      return this.queryDB(
+        `SELECT * FROM ${this.table} WHERE wallet_id=${walletId}`
+      );
+    },
+
     deleteByWalletID : function deleteByWalletID(walletId){
       return this.queryDB(
         `DELETE FROM ${this.table} WHERE wallet_id=${walletId}`

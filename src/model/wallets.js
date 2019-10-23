@@ -95,6 +95,19 @@ define([
       ()=> { return 500;}
     )
 
+  },
+
+  hasPayin : function hasPayin(wallet_id, payin_id){
+
+    return payins.getById(payin_id).then(
+      (payin)=>{
+        //if (payin.lenght===0) return Promise.reject(404); //Handled by getById
+
+        if(payin[0].wallet_id === wallet_id)
+        return true;
+        else return false;
+      }
+    ).catch((code)=> { return Promise.reject(code || 500); });
   }
 
   });

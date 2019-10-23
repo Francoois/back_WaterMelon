@@ -177,11 +177,41 @@ define([
     ).then(
       (payin) => { res.status(200).send(payin[0]); }
     ).catch (
-      (code)=>{ res.sendStatus(code)}
+      (code)=>{ res.sendStatus(code || 500 )}
     );
 
   });
+  userRouter.get('/payins', function(req, res){
+    const user_id = _getJWTUser(req);
 
+    wallets.getByUserId(user_id).then(
+      (wallet)=> {return payins.getByWalletID(wallet[0].id)}
+    ).then(
+      (payinz)=>{ res.status(200).send(payinz);}
+    ).catch(
+      (code)=>{res.sendStatus(code||500);}
+    )
+  });
+  userRouter.get('/payins/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
+    const payin_id = req.params.id;
+
+    users.hasPayin(user_id, payin_id).then(
+      (hasPayin)=>{
+        if(hasPayin===true){
+          return payins.getById(payin_id).then(
+            (payin)=>{
+              res.status(200).send(payin[0]);
+            }
+          )
+        } else {
+          res.sendStatus(403)
+        }
+      }
+    ).catch((code)=>{res.sendStatus(code || 500);})
+
+  });
+// FIXME : UPDATE & DELETE routes do not exist, test is OK with 404
 
   return userRouter;
 });

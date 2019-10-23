@@ -152,6 +152,19 @@ define([
 
           }
         ).catch( ()=>{ return 500; } )
+      },
+
+      /**
+       * Check if user has a Payin
+       * Return true or false or Error code
+       */
+      hasPayin : function hasPayin(user_id, payin_id){
+
+        return wallets.getByUserId(user_id).then(
+          (wallet) => {
+            return wallets.hasPayin(wallet[0].id,payin_id);
+          }
+        ).catch ( (code) => { return Promise.reject(code || 500); });
       }
 
     });

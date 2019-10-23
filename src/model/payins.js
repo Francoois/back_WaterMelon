@@ -9,11 +9,7 @@ define([
   Object.assign(Payins,{
 
     table : 'payins',
-
-    /*create : function create(req){
-      if( ('wallet_id' in req.body) || (req.body) )
-    }*/
-
+    
   });
   return Payins;
 });

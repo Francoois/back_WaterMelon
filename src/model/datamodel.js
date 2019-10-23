@@ -34,7 +34,17 @@ define([
    */
   getById = function(id){
     const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
-    return this.queryDB(query);
+
+    return this.queryDB(query).then(
+      
+      (result)=>{
+        if (result.length===0)
+          return Promise.reject(404);
+        else return result;
+      }
+    ).catch(
+      (code)=>{return Promise.reject(code || 400)}
+    );
   },
   deleteById = function(id){
     if ((typeof(this.table) === "string" || this.table instanceof String) && this.table in attributes){
