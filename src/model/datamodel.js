@@ -58,11 +58,12 @@ define([
   },
   _create = function(req){
     //console.log("CREER : "+this.query);
-
+    if (!this.isParamObjectOk(req.body))
+    return Promise.reject(400);
     const query = this.insertQueryBuilder(req);
     return this.queryDB(query
-    ).then(()=>{ let leDer = this.getLastInserted()
-      return leDer;
+    ).then((result)=>{
+      return result.insertId;
     });
   };
   //FIXME : stop using req object inherited from single file app
@@ -119,7 +120,7 @@ define([
       const query = this.updateQueryBuilder(id, putData);
       return this.queryDB(query).then(
         ()=>{
-          return this.getById(id);  
+          return this.getById(id);
         }
       ).catch(()=>{return 400});
     },

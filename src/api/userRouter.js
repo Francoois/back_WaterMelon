@@ -5,12 +5,13 @@ define([
 
   'model/users',
   'model/cards',
-  'model/wallets'
+  'model/wallets',
+  'model/payins'
 
 ], function(
   express,
   auth,
-  users, cards, wallets ){
+  users, cards, wallets, payins ){
 
   const userRouter = express.Router();
 
@@ -141,21 +142,6 @@ define([
     );
   });
 
-  /*// TODO ...
-  userRouter.get('/wallets/:id(\\d+)', function(req,res){
-    const token = req.headers["x-auth-token"];
-    const requestId = parseInt(req.query["user_id"]);
-
-    if(_isAuthenticated(req, token)){
-      console.log(requestId+" is connected");
-      // TODO : handle getByUserId, in upper route, with user_id parameter
-      wallets.getByUserId(requestId).then(
-        (result)=>{res.status(200).json(result)},
-        (code)=>{res.sendStatus(code)}
-      );
-
-    }
-  });*/
   userRouter.get('/wallets', function(req, res) {
     const user_id = _getJWTUser(req);
 
@@ -172,6 +158,30 @@ define([
       (code)=>{ res.sendStatus(code)}
     );
   });
+
+  userRouter.post('/payins', function(req, res) {
+    const user_id = _getJWTUser(req);
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=>{
+        return wallet[0].id;
+      }
+    ).then(
+      (wallet_id)=>{
+        return payins.create(req);
+      }
+    ).then(
+      (insertId) => {
+        return payins.getById(insertId);
+      }
+    ).then(
+      (payin) => { res.status(200).send(payin[0]); }
+    ).catch (
+      (code)=>{ res.sendStatus(code)}
+    );
+
+  });
+
 
   return userRouter;
 });

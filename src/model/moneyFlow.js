@@ -1,5 +1,8 @@
 //moneyFlow.js
 
+/**
+ * Object with a wallet_id delegate to this one
+ */
 define([
   'model/datamodel'
 ], function (datamodel){
@@ -21,6 +24,12 @@ define([
 
         },
         () => { console.error("Error fetching "+this.table); }
+      );
+    },
+
+    deleteByWalletID : function deleteByWalletID(walletId){
+      return this.queryDB(
+        `DELETE FROM ${this.table} WHERE wallet_id=${walletId}`
       );
     }
 

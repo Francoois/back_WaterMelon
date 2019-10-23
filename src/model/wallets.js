@@ -72,6 +72,29 @@ define([
          .catch( ()=>{ console.error("Failed fetching amount");});
       }
     );
+  },
+
+  deleteByUserId : function deleteByUserId(userId){
+
+    return this.getByUserId(userId).then(
+      (wallet)=>{
+        return this.deleteById(wallet[0].id);
+      }
+    )
+  },
+
+  deleteById : function deleteById(id){
+    //const prom_delWallet = model.deleteById.call(this, id);
+    const prom_delPayins = payins.deleteByWalletID(id);
+
+    return Promise.all([
+      prom_delPayins
+    ]).then(
+      ()=>{ return model.deleteById.call(this, id);}
+    ).catch(
+      ()=> { return 500;}
+    )
+
   }
 
   });
