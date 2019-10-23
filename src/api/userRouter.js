@@ -7,12 +7,13 @@ define([
   'model/cards',
   'model/wallets',
   'model/payins',
-  'model/payouts'
+  'model/payouts',
+  'model/transfers'
 
 ], function(
   express,
   auth,
-  users, cards, wallets, payins, payouts ){
+  users, cards, wallets, payins, payouts, transfers ){
 
   const userRouter = express.Router();
 
@@ -60,6 +61,8 @@ define([
   });
 
   userRouter.post('/cards', function(req,res){
+    req.body.user_id = _getJWTUser(req);
+
     cards.create(req).then(
         (newCard)=>{
           console.log('newCard : ',newCard);
@@ -267,6 +270,42 @@ define([
 
   });
 // FIXME : UPDATE & DELETE routes do not exist, test is OK with 404
+
+  userRouter.post('/transfers', function(req, res){
+    const user_id = _getJWTUser(req);
+    const destWallet_id = req.body.credited_wallet_id;
+    const amount = req.body.amount;
+
+    if( !Number.isInteger(parseFloat(amount)) || amount.includes('.') ){
+      console.log("BAD AMOUNT !!!"+( !Number.isInteger(parseFloat(amount)))+(amount.includes('.') !==-1));
+      res.status(400).send();
+      return;
+    }
+
+    wallets.exists(destWallet_id).then(
+      (exists)=>{
+        if (exists===true) {
+          return wallets.getByUserId(user_id);
+        }
+        else return Promise.reject(400);
+      }
+    ).then(
+      (wallet)=>{
+        req.body.debited_wallet_id = wallet[0].id;
+      }
+    ).then(
+      () => {return transfers.create(req);}
+    ).then(
+      (newId)=>{ return transfers.getById(newId); }
+    ).then(
+      (transfer)=>{
+        transfer[0].wallet_id = transfer[0].credited_wallet_id;
+        res.status(200).send(transfer[0]);}
+    ).catch(
+      ( code )=>{ res.sendStatus( code || 500 ); }
+    );
+
+  });
 
   return userRouter;
 });

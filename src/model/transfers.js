@@ -5,30 +5,30 @@ define([
   'model/payins',
   'model/payouts'
 ], function (
-  datamodel, payins, payouts
+  model, payins, payouts
 ){
   'use strict'
 
   //TODO : check balance before transfer
 
-  let Transfers = Object.create(datamodel);
+  let Transfers = Object.create(model);
   Object.assign(Transfers,{
 
     table : 'transfers',
 
     getByCreditedWalletId : function(wID){
       console.log("INSIDE getCRED");
-      return datamodel.queryDB(
+      return this.queryDB(
         `SELECT * FROM ${this.table} WHERE credited_wallet_id=${wID}`
       );
     },
 
     getByDebitedWalletId : function(wID){
       console.log("INSIDE getDEB");
-      return datamodel.queryDB(
+      return this.queryDB(
         `SELECT * FROM ${this.table} WHERE debited_wallet_id=${wID}`
       );
-    }
+    },
     /*,
 
     create : function(req){
@@ -59,8 +59,7 @@ define([
         },
         () => { console.error("Error creating Pay IN/OUT");}
       );
-    }*/,
-
+    }*//*,
     delete : function(id){
       //TODO check right to delete
       let delPayIProm = _deletePayin(req,res);
@@ -71,6 +70,18 @@ define([
       )
       .then( ()=>{sendOk(res);})
       .catch( ()=>sendError(res));
+    }*/
+    deleteByWalletID : function(wallet_id){
+
+      return this.queryDB(
+        `DELETE FROM transfers WHERE credited_wallet_id=${wallet_id}`
+      ).then(
+        ()=>{ return this.queryDB(
+          `DELETE FROM transfers WHERE debited_wallet_id=${wallet_id}`
+        );}
+      ).catch(
+        (code)=>{ return code || 500 ;}
+      )
     }
 
   });

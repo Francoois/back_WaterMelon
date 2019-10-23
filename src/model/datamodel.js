@@ -36,7 +36,7 @@ define([
     const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
 
     return this.queryDB(query).then(
-      
+
       (result)=>{
         if (result.length===0)
           return Promise.reject(404);
@@ -215,6 +215,14 @@ define([
         let query = `DELETE FROM ${this.table} WHERE user_id=${user_id}`;
         return this.queryDB(query);
       },
+
+      exists(model_id){
+        return this.getById(model_id).then(
+          (object)=>{
+            return Promise.resolve( (object.length===1) );
+          }
+        ).catch( (code) => { return Promise.reject(code || 500) ;})
+      }
 
       /*getById works instead
       getOne : function getObj(id) {

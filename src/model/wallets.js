@@ -87,10 +87,12 @@ define([
     //const prom_delWallet = model.deleteById.call(this, id);
     const prom_delPayins = payins.deleteByWalletID(id);
     const prom_delPayouts = payouts.deleteByWalletID(id);
+    const prom_delTransfers = transfers.deleteByWalletID(id);
 
     return Promise.all([
       prom_delPayins,
-      prom_delPayouts
+      prom_delPayouts,
+      prom_delTransfers
     ]).then(
       ()=>{ return model.deleteById.call(this, id);}
     ).catch(

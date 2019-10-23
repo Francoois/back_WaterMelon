@@ -71,7 +71,7 @@ define([
         ])
         .then(
           ()=>{return this.queryDB(query);},
-          ()=>{console.error("DELETE : delete wallet failed");}
+          ()=>{console.error("DELETE : delete wallet or cards failed");}
         );
       },
 

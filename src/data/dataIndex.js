@@ -40,7 +40,7 @@ define([
         strParams : [],
         nonStrParams : ["debited_wallet_id","credited_wallet_id","amount"],
         optional : [],
-        notUserDefined : ['id']
+        notUserDefined : ['id'/*,'debited_wallet_id'*/] //XXX : debited_wallet_id is added in router difference between notUserDefined and forbiddenToUser ?
       }
     });
     return attributes;
