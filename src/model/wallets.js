@@ -86,9 +86,11 @@ define([
   deleteById : function deleteById(id){
     //const prom_delWallet = model.deleteById.call(this, id);
     const prom_delPayins = payins.deleteByWalletID(id);
+    const prom_delPayouts = payouts.deleteByWalletID(id);
 
     return Promise.all([
-      prom_delPayins
+      prom_delPayins,
+      prom_delPayouts
     ]).then(
       ()=>{ return model.deleteById.call(this, id);}
     ).catch(
@@ -104,6 +106,19 @@ define([
         //if (payin.lenght===0) return Promise.reject(404); //Handled by getById
 
         if(payin[0].wallet_id === wallet_id)
+        return true;
+        else return false;
+      }
+    ).catch((code)=> { return Promise.reject(code || 500); });
+  },
+
+  hasPayout : function hasPayout(wallet_id, payout_id){
+
+    return payouts.getById(payout_id).then(
+      (payout)=>{
+        //if (payin.lenght===0) return Promise.reject(404); //Handled by getById
+
+        if(payout[0].wallet_id === wallet_id)
         return true;
         else return false;
       }

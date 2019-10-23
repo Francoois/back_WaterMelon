@@ -165,6 +165,14 @@ define([
             return wallets.hasPayin(wallet[0].id,payin_id);
           }
         ).catch ( (code) => { return Promise.reject(code || 500); });
+      },
+
+      hasPayout : function hasPayout(user_id, payout_id){
+        return wallets.getByUserId(user_id).then(
+          (wallet) => {
+            return wallets.hasPayout(wallet[0].id,payout_id);
+          }
+        ).catch ( (code) => { return Promise.reject(code || 500); });
       }
 
     });

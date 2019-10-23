@@ -6,12 +6,13 @@ define([
   'model/users',
   'model/cards',
   'model/wallets',
-  'model/payins'
+  'model/payins',
+  'model/payouts'
 
 ], function(
   express,
   auth,
-  users, cards, wallets, payins ){
+  users, cards, wallets, payins, payouts ){
 
   const userRouter = express.Router();
 
@@ -167,7 +168,7 @@ define([
         return wallet[0].id;
       }
     ).then(
-      (wallet_id)=>{
+      (wallet_id)=>{ //TODO : wallet_id not needed anymore ?
         return payins.create(req);
       }
     ).then(
@@ -202,6 +203,59 @@ define([
           return payins.getById(payin_id).then(
             (payin)=>{
               res.status(200).send(payin[0]);
+            }
+          )
+        } else {
+          res.sendStatus(403)
+        }
+      }
+    ).catch((code)=>{res.sendStatus(code || 500);})
+
+  });
+
+  userRouter.post('/payouts', function(req, res) {
+    const user_id = _getJWTUser(req);
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=>{
+        return wallet[0].id;
+      }
+    ).then(
+      (wallet_id)=>{ //TODO : wallet_id not needed anymore ?
+        return payouts.create(req);
+      }
+    ).then(
+      (insertId) => {
+        return payouts.getById(insertId);
+      }
+    ).then(
+      (payoutz) => { res.status(200).send(payoutz[0]); }
+    ).catch (
+      (code)=>{ res.sendStatus(code || 500 )}
+    );
+
+  });
+  userRouter.get('/payouts', function(req, res){
+    const user_id = _getJWTUser(req);
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=> {return payouts.getByWalletID(wallet[0].id)}
+    ).then(
+      (payoutz)=>{ res.status(200).send(payoutz);}
+    ).catch(
+      (code)=>{res.sendStatus(code||500);}
+    )
+  });
+  userRouter.get('/payouts/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
+    const payout_id = req.params.id;
+
+    users.hasPayout(user_id, payout_id).then(
+      (hasPayout)=>{
+        if(hasPayout===true){
+          return payouts.getById(payout_id).then(
+            (payout)=>{
+              res.status(200).send(payout[0]);
             }
           )
         } else {
