@@ -20,7 +20,7 @@ define([
       create : function(req){
         if (req.body.is_admin == undefined)
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
-        req.body.api_key = 'api_key_?'; //FIXME : api_key : what to do ?
+        req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000); //FIXME : api_key : what to do ?
 
         const query = this.insertQueryBuilder(req);
         return this.queryDB(query
@@ -173,6 +173,13 @@ define([
             return wallets.hasPayout(wallet[0].id,payout_id);
           }
         ).catch ( (code) => { return Promise.reject(code || 500); });
+      },
+
+      getByApiKey(api_key){
+
+        return this.queryDB(
+          `SELECT * FROM users WHERE api_key='${api_key}'`
+        );
       }
 
     });

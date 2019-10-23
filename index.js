@@ -46,7 +46,7 @@ function(
   if(debug==true){
     app.use ((req,res,next) => {
       process.countCall++;
-      if (process.countCall > 28) process.exit(0);
+      if (process.countCall > 50) process.exit(0);
       console.log('V V V\n');
       console.log(process.countCall);
       next();
@@ -63,7 +63,29 @@ function(
   app.use(prefix, visitorRouter);
 
   // JWT - call appropriate router
-  app.use(function(req,res,next) {
+  app.use(function(req,res,next){
+    const api_key = req.headers["x-auth-token"];
+
+    if(api_key !== undefined && api_key.includes('api_')){
+      users.getByApiKey(api_key).then(
+        (userz)=>{
+
+          if (userz.length===1){
+            return users.authenticate(userz[0].email,userz[0].password)
+          } else next();
+        }
+      ).then(
+        (jwt) => {
+          console.log("Set JWT : ",jwt);
+          req.headers["x-auth-token"] = jwt; next(); }
+      ).catch(
+        (code) => { return code || 500 ;}
+      )
+    } else next();
+
+
+  },
+  function(req,res,next) {
     const token = req.headers["x-auth-token"];
 
     if (token == undefined) {

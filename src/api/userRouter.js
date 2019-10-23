@@ -35,9 +35,10 @@ define([
   }
 
   userRouter.get('/users/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
 
-    if(thisUserId===id){
+    if(user_id===id){
 
       users.getOne(req.params.id).then(
         (result)=>{res.status(200).send(result)}
