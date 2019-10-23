@@ -4,12 +4,13 @@ define([
   'util/authenticator',
 
   'model/users',
-  'model/cards'
+  'model/cards',
+  'model/wallets'
 
 ], function(
   express,
   auth,
-  users, cards ){
+  users, cards, wallets ){
 
   const userRouter = express.Router();
 
@@ -128,7 +129,7 @@ define([
 
           cards.deleteById(req.params.id)
           .then(
-            (answer)=>{res.status(200).send('OK');},
+            (answer)=>{res.status(204).send();},
             ()=>{res.sendStatus(500);}
           );
         } else {
@@ -140,7 +141,7 @@ define([
     );
   });
 
-  // TODO ...
+  /*// TODO ...
   userRouter.get('/wallets/:id(\\d+)', function(req,res){
     const token = req.headers["x-auth-token"];
     const requestId = parseInt(req.query["user_id"]);
@@ -154,14 +155,21 @@ define([
       );
 
     }
-  });
+  });*/
   userRouter.get('/wallets', function(req, res) {
-    //res.sendStatus(200); // Forbidden
-    wallets.getByUserId(_getJWTUser(req)).then(
-      (result)=>{
-        res.status(200).send([result]); //* Verifying firewall... OK
+    const user_id = _getJWTUser(req);
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=>{
+        return wallets.getBalanceById(wallet[0].id)
+      }
+    ).then(
+      (balance)=>{
+        res.status(200).send([balance]); //* Verifying firewall... OK
       },
       ()=>{res.sendStatus(400)}
+    ).catch(
+      (code)=>{ res.sendStatus(code)}
     );
   });
 

@@ -66,8 +66,8 @@ define([
 
         Promise.all([ pInAmount,pOutAmount,pInTransfer,pOutTransfer ])
          .then( ()=>{resolve({
-           "id" : walletId,
-           "result" : result
+           "wallet_id" : walletId,
+           "balance" : result
          });} )
          .catch( ()=>{ console.error("Failed fetching amount");});
       }
