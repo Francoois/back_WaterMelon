@@ -319,6 +319,22 @@ define([
     );
 
   });
+  userRouter.get('/transfers', function(req, res) {
+    const user_id = _getJWTUser(req);
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=>{
+        console.log('wallet :',wallet);
+        return transfers.getByWalletID(wallet[0].id);
+      }
+    ).then(
+      (concat)=>{
+        res.status(200).send(concat)},
+      ()=>{res.sendStatus(500)}
+    ).catch(
+      ( code )=>{ res.sendStatus( code || 500 ); }
+    );
+  });
 
   return userRouter;
 });
