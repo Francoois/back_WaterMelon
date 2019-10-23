@@ -38,8 +38,10 @@ define([
     return this.queryDB(query).then(
 
       (result)=>{
-        if (result.length===0)
+        if (result.length===0){
+          console.log("NO RESULT : rejected in promise with 404");
           return Promise.reject(404);
+        }
         else return result;
       }
     ).catch(
@@ -219,9 +221,12 @@ define([
       exists(model_id){
         return this.getById(model_id).then(
           (object)=>{
+            console.log("EXIST TEST ON RESULT ", object);
             return Promise.resolve( (object.length===1) );
           }
-        ).catch( (code) => { return Promise.reject(code || 500) ;})
+        ).catch( (code) => {
+          if(code==404) return Promise.resolve(false);
+          else return Promise.reject(code || 500) ;})
       }
 
       /*getById works instead

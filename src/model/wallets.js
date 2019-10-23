@@ -125,6 +125,15 @@ define([
         else return false;
       }
     ).catch((code)=> { return Promise.reject(code || 500); });
+  },
+
+  hasAmount : function hasAmount(wallet_id, amount){
+
+    return this.getBalanceById(wallet_id).then(
+      (balance)=>{
+        return Promise.resolve(balance.balance > amount);
+      }
+    ).catch( (code)=>{ return code || 500 ;});
   }
 
   });

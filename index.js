@@ -46,7 +46,7 @@ function(
   if(debug==true){
     app.use ((req,res,next) => {
       process.countCall++;
-      if (process.countCall > 50) process.exit(0);
+      if (process.countCall > 55) process.exit(0);
       console.log('V V V\n');
       console.log(process.countCall);
       next();

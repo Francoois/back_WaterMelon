@@ -281,17 +281,30 @@ define([
       res.status(400).send();
       return;
     }
-
     wallets.exists(destWallet_id).then(
       (exists)=>{
         if (exists===true) {
           return wallets.getByUserId(user_id);
         }
-        else return Promise.reject(400);
+        else {
+          console.log(user_id+" DOES NOT EXIST");
+          return Promise.reject(400);}
       }
     ).then(
       (wallet)=>{
-        req.body.debited_wallet_id = wallet[0].id;
+        const debited_wallet_id = wallet[0].id;
+        req.body.debited_wallet_id = debited_wallet_id;
+        if (debited_wallet_id == destWallet_id){
+          console.log('transfer to one self forbidden');
+          return Promise.reject(400);
+        }
+        return wallets.hasAmount(debited_wallet_id, amount);
+      }
+    ).then(
+      (hasAmount)=>{
+        if(hasAmount==true){
+          return Promise.resolve();
+        } else return Promise.reject(400);
       }
     ).then(
       () => {return transfers.create(req);}
