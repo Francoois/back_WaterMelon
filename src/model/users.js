@@ -9,10 +9,6 @@ define([
 ], function(
   db, auth, datamodel, wallets, cards
 ){
-  function validateEmail(email) {
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
 
   const table = 'users';
 
@@ -27,7 +23,7 @@ define([
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000); //FIXME : api_key : what to do ?
 
-        if(!validateEmail(req.body.email)) return Promise.reject(400);
+        if(!this.validateEmail(req.body.email)) return Promise.reject(400);
         return this.getIdByEmail(req.body.email).then(
           (user) => {
             if(user.length!==0) return Promise.reject(400);
@@ -205,6 +201,11 @@ define([
             return wallets.hasTransfer(walletId, transfer_id);
           }
         );
+      },
+
+      validateEmail : function validateEmail(email) {
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
       }
 
     });

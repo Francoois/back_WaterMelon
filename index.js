@@ -14,11 +14,6 @@ requirejs([
   'util/authenticator',
 
   'model/users',
-  'model/cards',
-  'model/wallets',
-  'model/payins',
-  'model/payouts',
-  'model/transfers',
 
   'api/adminRouter',
   'api/userRouter',
@@ -28,7 +23,7 @@ requirejs([
 function(
   express, bodyParser, bcrypt,
   db, auth,
-  users, cards, wallets, payins, payouts, transfers,
+  users,
   adminRouter, userRouter, visitorRouter
 ) {
 
@@ -39,14 +34,14 @@ function(
   port = 8000;
 
   const debug = true;
-  process.countCall = 0;
+  if (debug) process.countCall = 0;
 
   app.use(bodyParser.urlencoded({ extended: true }));
 
-  if(debug==true){
+  if(debug){
     app.use ((req,res,next) => {
       process.countCall++;
-      if (process.countCall > 55) process.exit(0);
+      if (process.countCall > 78) process.exit(0);
       console.log('V V V\n');
       console.log(process.countCall);
       next();
@@ -138,5 +133,6 @@ function(
 // TODO Filtres
 // TODO pno check
 // TODO casse
+// TODO : Encrypted password
 
 // #ASK : A quoi sert  le champ api_key ?

@@ -218,7 +218,7 @@ define([
         return this.queryDB(query);
       },
 
-      exists(model_id){
+      exists : function(model_id){
         return this.getById(model_id).then(
           (object)=>{
             console.log("EXIST TEST ON RESULT ", object);
@@ -227,6 +227,19 @@ define([
         ).catch( (code) => {
           if(code==404) return Promise.resolve(false);
           else return Promise.reject(code || 500) ;})
+      },
+
+      hasAnyUpdateParam : function(updateRequest){
+        const table = this.table;
+
+        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+          for (let param of params){
+
+            if((param in updateRequest) && (attributes[table].notUserDefined.indexOf(param) === -1) ) return true;
+
+          }
+        }
+        return false;
       }
 
       /*getById works instead

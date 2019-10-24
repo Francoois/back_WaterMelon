@@ -33,17 +33,25 @@ define([
   userRouter.delete('/users/:id(\\d+)', function(req, res){
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
+    console.log("user_id : ",user_id);
+    console.log("id : ",id);
 
-    if(user_id===id){
 
-      return users.deleteById(id).then(
-        ()=>{
-          res.sendStatus(204);
+
+    users.exists(id).then(
+      (exists)=>{
+        if (exists){
+          if(user_id!==id) return Promise.reject (403);
+
+          return users.deleteById(id);
         }
-      ).catch(
-        (code) => { res.sendStatus(code || 500 ); }
-      )
-    } else res.sendStatus(403);
+        else return Promise.reject(404);
+      }
+    ).then(
+      ()=>{ res.sendStatus(204); }
+    ).catch(
+      (code) => { res.sendStatus(code || 500 ); }
+    );
 
   });
 
@@ -77,13 +85,33 @@ define([
   userRouter.put('/users/:id(\\d+)', function(req, res){
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
-    
-    users.update(
-      req.params.id,
-      req.body
+
+    if( (!users.hasAnyUpdateParam(req.body))
+      || (!users.validateEmail(req.body.email))
+    ){
+
+      res.status(400).send(); return;
+    }
+
+    users.exists(id).then(
+      (exists)=> {
+        if(exists===true) return Promise.resolve();
+        else return Promise.reject(404);
+      }
     ).then(
-      ()=>{res.sendStatus(200)}
-    ).catch(()=>res.sendStatus(500));
+      ()=>{if (user_id !== id) {
+        res.status(403).send(); return; // TEST Interaction : put 9999999 is both another user AND does not exist
+      }}
+    ).then(
+      ()=>{ return users.update( req.params.id, req.body ); }
+    ).then(
+      ()=>{ return users.getOne(id); }
+    ).then(
+      (user)=>{res.status(200).send(user);}
+    ).catch((code)=>{
+      console.log("PUT failed, Code : ",code);
+      res.sendStatus(code || 500);
+    });
   });
 
   userRouter.post('/cards', function(req,res){
