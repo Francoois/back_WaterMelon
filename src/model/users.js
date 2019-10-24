@@ -9,6 +9,10 @@ define([
 ], function(
   db, auth, datamodel, wallets, cards
 ){
+  function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
 
   const table = 'users';
 
@@ -18,33 +22,40 @@ define([
     {
       table : 'users',
       create : function(req){
+
         if (req.body.is_admin == undefined)
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000); //FIXME : api_key : what to do ?
 
-        const query = this.insertQueryBuilder(req);
-        return this.queryDB(query
+        if(!validateEmail(req.body.email)) return Promise.reject(400);
+        return this.getIdByEmail(req.body.email).then(
+          (user) => {
+            if(user.length!==0) return Promise.reject(400);
+            else return this.insertQueryBuilder(req);
+          },
+          (code)=> {
+            if(code === 404) return this.insertQueryBuilder(req);
+            else return code || 500 ;}
+        ).then(
+          (query) => {
+            console.log("Query : ",query);
+            return this.queryDB( query );}
         ).then(
           (result)=>{
             const user_id = result.insertId;
-            console.log("Request resultId : ",user_id);
-
             const userProm = this.getOne(user_id);
 
             return Promise.all([
               userProm,
               wallets.create(user_id)
-            ]).then(
-              (responses)=>{
-                return Promise.resolve(responses[0]);
-              },
-              (code)=>{return Promise.reject(code)}
-            );
-          },
-          (code)=>{
-            console.error("Cannot create user from REQUEST");
-            return Prom.reject(code);
+            ]);
           }
+        ).then(
+          (responses)=>{ return responses[0]; }
+        ).catch(
+          (code) => {
+            console.log("ABORT creating user");
+            return code || 500 ;}
         );
       },
       /**
@@ -62,6 +73,7 @@ define([
         )
       },
 
+      /* This function is obsolete, due to new Database allowing to delete one user without its payment
       deleteById : function(id){
         let query = `DELETE FROM ${this.table} WHERE id=${id}`;
 
@@ -73,7 +85,7 @@ define([
           ()=>{return this.queryDB(query);},
           ()=>{console.error("DELETE : delete wallet or cards failed");}
         );
-      },
+      },*/
 
       /**
       * connect :
@@ -117,22 +129,17 @@ define([
           );
       },
 
-      getByEmail : function getByEmail(email){
-        const id = _getUserIdFromMail();
-        return id; //todo : real object etc...
-      },
-
       getIdByEmail : function getIdByEmail(email){
         return this.queryDB(`SELECT id FROM users WHERE email='${email}'`)
         .then (
           (result) => {
             console.log(result);
             if(result.length===0) return Promise.reject(404);
-            return Promise.resolve(parseInt(result[0].id));
+            return parseInt(result[0].id);
           }
         ).catch( (code )=>{
           console.log("ERROR, returned code :",code);
-          return Promise.reject(code);
+          return Promise.reject(code || 500);
         });
       },
 
@@ -179,6 +186,24 @@ define([
 
         return this.queryDB(
           `SELECT * FROM users WHERE api_key='${api_key}'`
+        );
+      },
+
+      getWallet : function getWallet(user_id){
+
+        return wallets.getByUserId(user_id).then(
+          (wallet)=>{
+            return wallet[0].id || Promise.reject(500);
+          }
+        )
+      },
+
+      hasTransfer : function(user_id, transfer_id){
+
+        return this.getWallet(user_id).then(
+          (walletId)=>{
+            return wallets.hasTransfer(walletId, transfer_id);
+          }
         );
       }
 

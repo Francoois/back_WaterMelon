@@ -68,8 +68,8 @@ define([
          .then( ()=>{resolve({
            "wallet_id" : walletId,
            "balance" : result
-         });} )
-         .catch( ()=>{ console.error("Failed fetching amount");});
+         });}
+       ).catch( ()=>{ console.error("Failed fetching amount");});
       }
     );
   },
@@ -134,6 +134,15 @@ define([
         return Promise.resolve(balance.balance > amount);
       }
     ).catch( (code)=>{ return code || 500 ;});
+  },
+
+  hasTransfer : function(wallet_id, transfer_id){
+
+    return transfers.getById(transfer_id).then(
+      (result)=>{
+        return (result[0].credited_wallet_id==wallet_id || result[0].debited_wallet_id == wallet_id);
+      }
+    );
   }
 
   });

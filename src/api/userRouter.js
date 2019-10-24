@@ -30,6 +30,22 @@ define([
     );
   });
   // No POST for now
+  userRouter.delete('/users/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
+    const id = parseInt(req.params.id);
+
+    if(user_id===id){
+
+      return users.deleteById(id).then(
+        ()=>{
+          res.sendStatus(204);
+        }
+      ).catch(
+        (code) => { res.sendStatus(code || 500 ); }
+      )
+    } else res.sendStatus(403);
+
+  });
 
   function _getJWTUser(req){
     return auth.getTokenUserId(req.headers["x-auth-token"]);
@@ -50,7 +66,6 @@ define([
     } else res.sendStatus(403); //Forbidden
 
   });
-
   userRouter.put('/users/:id(\\d+)', function(req, res){
     users.update(
       req.params.id,
@@ -161,6 +176,24 @@ define([
       ()=>{res.sendStatus(400)}
     ).catch(
       (code)=>{ res.sendStatus(code)}
+    );
+  });
+  userRouter.get('/wallets/:id(\\d+)', function(req,res){
+    const user_id = _getJWTUser(req);
+    const wallet_id = req.params.id;
+
+    wallets.getByUserId(user_id).then(
+      (wallet)=>{
+        console.log('wallet :',wallet);
+        console.log('walletid :',wallet_id);
+        if(wallet[0].id == wallet_id){
+          return wallets.getBalanceById(wallet_id);
+        } else return Promise.reject(404);
+      }
+    ).then(
+      (result)=>{res.status(200).send(result);}
+    ).catch(
+      (code)=>{ res.sendStatus( code || 500); }
     );
   });
 
@@ -333,6 +366,22 @@ define([
       ()=>{res.sendStatus(500)}
     ).catch(
       ( code )=>{ res.sendStatus( code || 500 ); }
+    );
+  });
+  userRouter.get('/transfers/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
+    const transfer_id = req.params.id;
+
+    users.hasTransfer(user_id, transfer_id).then(
+      (hasTransfer)=> {
+        if(hasTransfer===true){
+          return transfers.getById(req.params.id)
+        }else return Promise.reject(403);
+      }
+    ).then(
+      (result)=>{res.status(200).json(result[0])}
+    ).catch(
+      (code )=>{res.sendStatus(code || 500);}
     );
   });
 

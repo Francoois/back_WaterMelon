@@ -22,16 +22,18 @@ define([
   });
 
   visitorRouter.post('/users', function(req, res) {
-    users.create(req).then(
-        (userObj)=>{
-          console.log("usercreated");
-          res.status(200).send(userObj);
-        }
-      ).catch(
-        (code)=>{
-          res.sendStatus(code);
-          console.error("Unable to create user's wallet");}
-      );
+
+    if(users.isParamObjectOk(req.body)){
+      users.create(req).then(
+          (userObj)=>{
+            console.log("usercreated");
+            res.status(200).send(userObj);
+          }
+        ).catch( (code)=>{ res.sendStatus(code); );
+    } else {
+      res.sendStatus(400);
+    }
+
   });
   return visitorRouter;
 });
