@@ -55,18 +55,29 @@ define([
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
 
-    if(user_id===id){
-
-      users.getOne(req.params.id).then(
-        (result)=>{res.status(200).send(result)}
-      ).catch(
-        ()=>{res.sendStatus(403)}
-      );
-
-    } else res.sendStatus(403); //Forbidden
+    users.exists(id).then(
+      (exists)=>{
+        if(exists==true){
+          return;
+        } else return Promise.reject(404);
+      }
+    ).then(
+      ()=>{
+        if(user_id===id){
+          return users.getOne(req.params.id)
+        } else return Promise.reject(403); //Forbidden
+      }
+    ).then(
+      (result)=>{res.status(200).send(result)}
+    ).catch(
+      (code)=>{res.sendStatus( code || 500 )}
+    );
 
   });
   userRouter.put('/users/:id(\\d+)', function(req, res){
+    const user_id = _getJWTUser(req);
+    const id = parseInt(req.params.id);
+    
     users.update(
       req.params.id,
       req.body

@@ -29,7 +29,7 @@ define([
             console.log("usercreated");
             res.status(200).send(userObj);
           }
-        ).catch( (code)=>{ res.sendStatus(code); );
+        ).catch( (code)=>{ res.sendStatus(code);} );
     } else {
       res.sendStatus(400);
     }
