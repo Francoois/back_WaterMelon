@@ -1,76 +1,92 @@
 //transfers.js
 
 define([
-  'model/datamodel',
-  'model/payins',
-  'model/payouts'
+  'model/datamodel'
 ], function (
-  datamodel, payins, payouts
+  model
 ){
   'use strict'
 
   //TODO : check balance before transfer
 
-  let Transfers = Object.create(datamodel);
-  Object.assign(Transfers,{
+  let Transfers = Object.create(model);
+  Object.assign(Transfers,
+    {
 
     table : 'transfers',
 
+    /*create : function(req){
+
+      const amount = req.body.amount;
+      const debited_wallet_id = req.body.debited_wallet_id;
+
+      return wallets.hasAmount(debited_wallet_id, amount).then(
+
+        (hasAmount)=>{
+          if(hasAmount===true){
+            return model.create.call(this, req);
+          } else return Promise.reject(403);
+        }
+
+      ).catch( (code)=>{ return code || 500 });
+    },*/
+
     getByCreditedWalletId : function(wID){
       console.log("INSIDE getCRED");
-      return datamodel.queryDB(
+      return this.queryDB(
         `SELECT * FROM ${this.table} WHERE credited_wallet_id=${wID}`
       );
     },
 
     getByDebitedWalletId : function(wID){
       console.log("INSIDE getDEB");
-      return datamodel.queryDB(
+      return this.queryDB(
         `SELECT * FROM ${this.table} WHERE debited_wallet_id=${wID}`
       );
-    }
-    /*,
+    },
 
-    create : function(req){
-      const query = this.insertQueryBuilder(req);
-      let idInsert = null;
-
-      return this.queryDB(query
-      ).then(
-        () => {
-          return Promise.all([
-            payins.create({
-              body : {
-                wallet_id : req.body.credited_wallet_id,
-                amount : req.body.amount
-              }
-            }),
-            payouts.create({
-              body : {
-                wallet_id : req.body.debited_wallet_id,
-                amount : req.body.amount
-              }
-            })
-          ]);
-        },() => { console.error("Error creating transfer");}
-      ).then(
-        () => {
-          return this.getLastInserted();
-        },
-        () => { console.error("Error creating Pay IN/OUT");}
-      );
-    }*/,
-
-    delete : function(id){
-      //TODO check right to delete
-      let delPayIProm = _deletePayin(req,res);
-      let delPayOProm = _deletePayout(req,res);
-      Promise.all([delPayIProm,delPayOProm])
+    getByWalletID : function(wID){
+      console.log('Get transfers in and out');
+      return Promise.all([
+        this.getByCreditedWalletId(wID),
+        this.getByDebitedWalletId(wID)
+      ])
       .then(
-        ()=>{ _deleteById("transfers", req.params.id);}
+        (result)=>{
+          let concat = [];
+
+          if(result[0].length>0) {
+            result[0].forEach(function(x){
+              x.wallet_id = x.credited_wallet_id;
+            });
+            concat = concat.concat(result[0]);
+          }
+
+          if(result[1].length>0) {
+            result[1].forEach(function(x){
+              x.wallet_id = x.debited_wallet_id;
+            });
+            concat = concat.concat(result[1]);
+          }
+          /*console.log('res 0 : ',result[0]);
+          console.log('res 1 : ',result[1]);
+          console.log('concat :', concat,'the end');*/
+          return Promise.resolve(concat);
+        }
+      );
+    },
+
+    deleteByWalletID : function(wallet_id){
+
+      return this.queryDB(
+        `DELETE FROM transfers WHERE credited_wallet_id=${wallet_id}`
+      ).then(
+        ()=>{ return this.queryDB(
+          `DELETE FROM transfers WHERE debited_wallet_id=${wallet_id}`
+        );}
+      ).catch(
+        (code)=>{ return code || 500 ;}
       )
-      .then( ()=>{sendOk(res);})
-      .catch( ()=>sendError(res));
     }
 
   });

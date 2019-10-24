@@ -2,9 +2,14 @@
 
 var request = require("request");
 let base_url = `http://localhost:8000/v1`;
+const adminToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6InRvdG90QHdhbmFkb28uZnIiLCJpc19hZG1pbiI6dHJ1ZSwiaWF0IjoxNTcxMTY4ODUzfQ.7b-feT6JFisI0EpatjENTh1ATwFuqiZN4K8a34Fqj5k`;
+
 let userAttributes = {
   header : {'Content-Type' : 'application/x-www-form-urlencoded'},
   url : base_url+"/users",
+  headers : {
+    "x-auth-token" : adminToken,
+  },
   form : {
     first_name:"jasmin",
     last_name:"testor",
@@ -41,7 +46,13 @@ let createOneUser = function() {
 describe("Users API OK \n", function() {
      describe("GET /users", function() {
          it("returns status code 200", function(done) {
-             request.get(base_url+"/users", function(error, response, body)
+             request.get(
+             {
+               url : base_url+"/users",
+               headers : {
+                 "x-auth-token" : adminToken,
+               }
+             }, function(error, response, body)
              {
              expect(response.statusCode).toBe(200);
              done();
@@ -51,7 +62,12 @@ describe("Users API OK \n", function() {
     describe("POST /users & GET new user", function() {
         it("returns status code 200 twice", function(done) {
             createOneUser().then((addedUserId)=>{
-              request.get(base_url+"/users/"+addedUserId, function(error, response, body){
+              request.get(base_url+"/users/"+addedUserId,
+              {
+                headers : {
+                  "x-auth-token" : adminToken,
+                }
+              }, function(error, response, body){
               expect(response.statusCode).toBe(200);
 
               let testUserAttributes = JSON.parse(JSON.stringify(userAttributes.form));
@@ -69,7 +85,12 @@ describe("Users API OK \n", function() {
    describe("DELETE after CREATE USER", function() {
        it("returns status code 200 twice", function(done) {
            createOneUser().then((addedUserId)=>{
-             request.delete(base_url+"/users/"+addedUserId, function(error, response, body){
+             request.delete({
+               url : base_url+"/users/"+addedUserId,
+               headers : {
+                 "x-auth-token" : adminToken,
+               }
+             }, function(error, response, body){
              expect(response.statusCode).toBe(200);
              done();
            });
@@ -84,7 +105,10 @@ describe("Users API OK \n", function() {
               {
                 method : 'PUT',
                 url : url,
-                form : { password : "tasvucamarche?" }
+                form : { password : "tasvucamarche?" },
+                headers : {
+                  "x-auth-token" : adminToken,
+                }
               },
               function(error, response, body){
             expect(response.statusCode).toBe(200);

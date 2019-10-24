@@ -1,5 +1,8 @@
 //moneyFlow.js
 
+/**
+ * Object with a wallet_id delegate to this one
+ */
 define([
   'model/datamodel'
 ], function (datamodel){
@@ -7,7 +10,9 @@ define([
 
   let MoneyFlow = Object.create(datamodel);
   Object.assign(MoneyFlow,{
+
     getAmountByWalletID : function(walletId){
+
       return datamodel.queryDB(`SELECT * FROM ${this.table} WHERE wallet_id=${walletId}`)
       .then(
         (queryResult) => {
@@ -20,7 +25,21 @@ define([
         },
         () => { console.error("Error fetching "+this.table); }
       );
+    },
+
+    getByWalletID : function getByWalletID(walletId){
+
+      return this.queryDB(
+        `SELECT * FROM ${this.table} WHERE wallet_id=${walletId}`
+      );
+    },
+
+    deleteByWalletID : function deleteByWalletID(walletId){
+      return this.queryDB(
+        `DELETE FROM ${this.table} WHERE wallet_id=${walletId}`
+      );
     }
+
   });
   return MoneyFlow;
 });

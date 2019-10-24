@@ -1,37 +1,10 @@
-//entity.js
+//datamodel.js
 
-// This function needs clearer purpuse.
-// It should be a parent object of work object
-
-define(['data/dbConnector'], function(db, datamodel){
+define([
+  'data/dbConnector',
+  'data/dataIndex'
+], function(db, attributes){
   'use strict'
-
-  const attributes = {
-    users : {
-      strParams : ["first_name","last_name","email","password","api_key"],
-      nonStrParams : ["id","is_admin"]
-    },
-    cards : {
-      strParams : ["brand","expired_at","last_4"],
-      nonStrParams : ["id", "user_id"]
-    },
-    wallets : {
-      strParams : [],
-      nonStrParams : ["user_id"]
-    },
-    payins : {
-      strParams : [],
-      nonStrParams : ["wallet_id", "amount"]
-    },
-    payouts : {
-      strParams : [],
-      nonStrParams : ["wallet_id", "amount"]
-    },
-    transfers : {
-      strParams : [],
-      nonStrParams : ["debited_wallet_id","credited_wallet_id","amount"]
-    }
-  }
 
   /**
   * Returns a Promise to execute the query
@@ -43,7 +16,7 @@ define(['data/dbConnector'], function(db, datamodel){
       db.query(query, function(err, result, fields) {
         if (err){
           //throw err
-          console.error("\n    ===> WaterMelonDB Error :" + err);
+          console.error("\n    ===> WaterMelonDB Error :",err);
           reject(err);
         }else{
           console.log("success");
@@ -56,13 +29,24 @@ define(['data/dbConnector'], function(db, datamodel){
     let query = `SELECT * FROM ${this.table}`;
     return queryDB(query);
   },
-  update = function(id, putData){
-    const query = this.updateQueryBuilder(id, putData);
-    return this.queryDB(query);
-  },
+  /**
+   * id : integer
+   */
   getById = function(id){
     const query = `SELECT * FROM ${this.table} WHERE  id=${id}`;
-    return this.queryDB(query);
+
+    return this.queryDB(query).then(
+
+      (result)=>{
+        if (result.length===0){
+          console.log("NO RESULT : rejected in promise with 404");
+          return Promise.reject(404);
+        }
+        else return result;
+      }
+    ).catch(
+      (code)=>{return Promise.reject(code || 400)}
+    );
   },
   deleteById = function(id){
     if ((typeof(this.table) === "string" || this.table instanceof String) && this.table in attributes){
@@ -70,6 +54,9 @@ define(['data/dbConnector'], function(db, datamodel){
       return this.queryDB(query);
     }
   },
+  /**
+   * Deprecated : use result.insertId instead !!!
+   */
   _getLastInserted = function(){
     let table = this.table;//FIXME : cannot keep this in Promise
     return new Promise( function(resolve, reject){
@@ -83,11 +70,12 @@ define(['data/dbConnector'], function(db, datamodel){
   },
   _create = function(req){
     //console.log("CREER : "+this.query);
-
+    if (!this.isParamObjectOk(req.body))
+    return Promise.reject(400);
     const query = this.insertQueryBuilder(req);
     return this.queryDB(query
-    ).then(()=>{ let leDer = this.getLastInserted()
-      return leDer;
+    ).then((result)=>{
+      return result.insertId;
     });
   };
   //FIXME : stop using req object inherited from single file app
@@ -95,7 +83,9 @@ define(['data/dbConnector'], function(db, datamodel){
     * Create an INSERT query
     */
   let insertQueryBuilder = function(req){
-    if(this.table ==undefined) throw new Error();
+
+    //TODO : simplify this mess with isParamObjectOk
+    if(this.table == undefined) throw new Error();
 
     let table = this.table;
 
@@ -115,9 +105,10 @@ define(['data/dbConnector'], function(db, datamodel){
               queryValues += `${req.body[param]},`;
 
           }
-          else if(param != "id") {
+          else if( (param in attributes[table].optional)
+        || (param in attributes[table].notUserDefined) ) {
             //res.send("Error, missing parameter in request body");
-            throw new Error("Missing parameter in request body : " + JSON.stringify(req.body));
+            throw new Error("Missing parameter <<"+param+">> in request body : " + JSON.stringify(req.body));
             return;
           }
         }
@@ -137,10 +128,20 @@ define(['data/dbConnector'], function(db, datamodel){
 
     queryDB : queryDB,
 
-    update : update,
+    update : function update(id, putData){
+      const query = this.updateQueryBuilder(id, putData);
+      return this.queryDB(query).then(
+        ()=>{
+          return this.getById(id);
+        }
+      ).catch(()=>{return 400});
+    },
 
     getById : getById,
 
+    /**
+     * Deprecated : use result.insertId instead !!!
+     */
     getLastInserted : _getLastInserted,
 
     deleteById : deleteById,
@@ -175,6 +176,83 @@ define(['data/dbConnector'], function(db, datamodel){
         }
         queryParam = queryParam.slice(0, -2);
         return queryParam+queryCondition;
+      },
+      getByUserId : function(userId){
+        return this.queryDB(
+          `SELECT * FROM ${this.table} WHERE user_id=${userId}`
+        );
+      },
+
+      isParamObjectOk : function isParamObjectOk(paramObj){
+        const table = this.table;
+        // Check for all model attributes
+        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+          for (let param of params){
+
+            let notUserDefined = (attributes[table].notUserDefined.indexOf(param) != -1);
+            let isOptional = (attributes[table].optional.indexOf(param) != -1);
+
+            // Is the attribute in parameters ?
+            if( paramObj.hasOwnProperty(param) ){
+              // Is it forbidden to provide ?
+              if(notUserDefined){
+                console.log("notok : notUserDefined : ",param);
+                return false;
+              }
+              // Is it authorized not to be here ?
+            } else if( isOptional || notUserDefined ) {
+              console.log("optional or notUserDefined: ",param);
+              continue;
+            } else {
+              console.log("notok : parameter not found : ",param);
+              return false;
+            }
+
+          }
+        }
+        return true;
+      },
+
+      deleteByUserId : function deleteByUserId(user_id){
+        let query = `DELETE FROM ${this.table} WHERE user_id=${user_id}`;
+        return this.queryDB(query);
+      },
+
+      exists : function(model_id){
+        return this.getById(model_id).then(
+          (object)=>{
+            console.log("EXIST TEST ON RESULT ", object);
+            return Promise.resolve( (object.length===1) );
+          }
+        ).catch( (code) => {
+          if(code==404) return Promise.resolve(false);
+          else return Promise.reject(code || 500) ;})
+      },
+
+      hasAnyUpdateParam : function(updateRequest){
+        const table = this.table;
+
+        for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
+          for (let param of params){
+
+            if((param in updateRequest) && (attributes[table].notUserDefined.indexOf(param) === -1) ) return true;
+
+          }
+        }
+        return false;
       }
+
+      /*getById works instead
+      getOne : function getObj(id) {
+        let object = {};
+        const tuple = this.getById(id);
+
+        for (let params of [attributes[this.table].strParams, attributes[this.table].nonStrParams]) {
+          for (let param of params){
+            object[param] = tuple
+          }
+        }
+
+      }*/
   }
 });
