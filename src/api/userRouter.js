@@ -29,14 +29,9 @@ define([
       ()=>{res.sendStatus(400)}
     );
   });
-  // No POST for now
   userRouter.delete('/users/:id(\\d+)', function(req, res){
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
-    console.log("user_id : ",user_id);
-    console.log("id : ",id);
-
-
 
     users.exists(id).then(
       (exists)=>{
@@ -54,11 +49,6 @@ define([
     );
 
   });
-
-  function _getJWTUser(req){
-    return auth.getTokenUserId(req.headers["x-auth-token"]);
-  }
-
   userRouter.get('/users/:id(\\d+)', function(req, res){
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
@@ -113,6 +103,10 @@ define([
       res.sendStatus(code || 500);
     });
   });
+
+  function _getJWTUser(req){
+    return auth.getTokenUserId(req.headers["x-auth-token"]);
+  }
 
   userRouter.post('/cards', function(req,res){
     req.body.user_id = _getJWTUser(req);
