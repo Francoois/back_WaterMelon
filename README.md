@@ -71,4 +71,14 @@ RequireJS is used to split the code into modules
 
 ### Jasmine
 
-Jasmine is used for tests 
+Jasmine is used for tests. Currently test exists only for *users* and *cards* on *admin* routes. They are located in the `spec` folder and have a `*.spec.js` name. 
+
+To launch the , you have to take some manual config steps :
+ - you have to perform a manual POST to /login to get an admin JSON Web Token
+ - to test the cards you also have to specify a users id in `attributes.form.user_id` in `cardsCRUD.spec.js`
+
+Then you can launch with :
+```console
+npm test 			# launch all the tests
+npm test spec/foo.spec.js	# lauch tests in foo file
+```
