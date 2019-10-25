@@ -6,7 +6,7 @@ let request = require("request");
 let cardsTypes = ['visa', 'master_card', 'american_express', 'union_pay', 'jcb'];
 let base_url = `http://localhost:8000/v1`;
 let attributes = null;
-const adminToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6InRvdG90QHdhbmFkb28uZnIiLCJpc19hZG1pbiI6dHJ1ZSwiaWF0IjoxNTcxMTY4ODUzfQ.7b-feT6JFisI0EpatjENTh1ATwFuqiZN4K8a34Fqj5k`;
+const adminToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOSwiZW1haWwiOiJ5b0B5YWhvby5mciIsImlzX2FkbWluIjp0cnVlLCJpYXQiOjE1NzIwMjY0ODZ9.Le5SiNg2WpnPrLoz0BINTZ47paTq1JUJ_YZ0SRlUem0`;
 
 let createOne = function() {
   return new Promise(
@@ -23,15 +23,15 @@ let createOne = function() {
           last_4:"1664",
           expired_at:"2019-12-31 00:00:00",
           brand:cardsTypes[tools.getRandomInt(cardsTypes.length-1)],
-          user_id:1
+          user_id:105
         }
       };
 
       request.post(
         attributes,
         function(error, response, body) {
-          if (error) throw new Error();
-          let newId = parseInt(response.body);
+          if (error) throw error;
+          let newId = JSON.parse(body).id;
           expect(response.statusCode).toBe(200);
           resolve(newId);
         }
@@ -85,7 +85,7 @@ describe("TEST cards CRUD\n", function() {
                   headers : { 'x-auth-token' : adminToken }
                 },
                 function(err, resp, body){
-                  console.log(body);
+                  //console.log(body);
                   expect(resp.statusCode).toBe(200);
                   done();
                   /*

@@ -26,7 +26,7 @@ function(
   adminRouter, userRouter, visitorRouter
 ) {
 
-'use strict'
+'use strict';
 
   const app = express(),
   prefix = '/v1',
