@@ -229,6 +229,7 @@ define([
       (code)=>{ res.sendStatus( code || 500); }
     );
   });
+  //UPDATE A WALLET MAKES NO SENSE FROM USERS POV
 
   userRouter.post('/payins', function(req, res) {
     const user_id = _getJWTUser(req);

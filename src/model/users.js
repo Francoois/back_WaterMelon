@@ -32,6 +32,7 @@ define([
             resolve();
           });
         }).then(
+          // Check user not already in DB
           ()=>{ return this.getIdByEmail(req.body.email);}
         ).then(
           (user) => {
@@ -42,10 +43,11 @@ define([
             if(code === 404) return this.insertQueryBuilder(req);
             else return code || 500 ;}
         ).then(
+          //Perform creation
           (query) => {
-            console.log("Query : ",query);
             return this.queryDB( query );}
         ).then(
+          // Fetch newly created user + create its wallet
           (result)=>{
             const user_id = result.insertId;
             const userProm = this.getOne(user_id, /*justCreated*/ true);
@@ -56,6 +58,7 @@ define([
             ]);
           }
         ).then(
+          // Return new user
           (responses)=>{ return responses[0]; }
         ).catch(
           (code) => {

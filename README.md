@@ -62,3 +62,13 @@ The database is accessed from the `data/dbConnector` object. In fact this obje
 To allow to check parameters, the `data/dataIndex` object enumerate object parameters types.
 To generate an *INSERT* or *UPDATE* query, an object can be a *string* or *non String* value.
 To check parameters in *CREATE* and *PUT* we also check which parameters are *optional*, or *notUserDefined*, so that a user cannot set itself admin.
+
+## Custom dependencies
+
+### RequireJS
+
+RequireJS is used to split the code into modules
+
+### Jasmine
+
+Jasmine is used for tests 

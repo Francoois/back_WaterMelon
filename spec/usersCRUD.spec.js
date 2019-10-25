@@ -2,7 +2,7 @@
 
 var request = require("request");
 let base_url = `http://localhost:8000/v1`;
-const adminToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6InRvdG90QHdhbmFkb28uZnIiLCJpc19hZG1pbiI6dHJ1ZSwiaWF0IjoxNTcxMTY4ODUzfQ.7b-feT6JFisI0EpatjENTh1ATwFuqiZN4K8a34Fqj5k`;
+const adminToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxOTQsImVtYWlsIjoiYWRtaW5AYWRtaW4uY29tIiwiaXNfYWRtaW4iOnRydWUsImlhdCI6MTU3MTk5NzM1M30.da3UV7oSGTnqqoqETqEgGOd2za048PDCy10oYp4WmvY`;
 
 let userAttributes = {
   header : {'Content-Type' : 'application/x-www-form-urlencoded'},

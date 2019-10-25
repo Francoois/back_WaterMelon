@@ -29,7 +29,7 @@ define([
     },
     getAll : function(){
       let query = `SELECT * FROM ${this.table}`;
-      return queryDB(query);
+      return this.queryDB(query);
     },
     /**
      * id : integer
