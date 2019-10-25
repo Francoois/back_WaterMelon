@@ -1,12 +1,14 @@
 //users.js
 
 define([
+  'bcrypt', // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
   'util/authenticator',
   'model/datamodel',
   'model/wallets',
   'model/cards'
 ], function(
-  auth, datamodel, wallets, cards
+  bcrypt, auth,
+  datamodel, wallets, cards
 ){
 
   let User = Object.create(datamodel);
@@ -17,11 +19,21 @@ define([
 
         if (req.body.is_admin == undefined)
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
+
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000);
 
         if(!this.validateEmail(req.body.email)) return Promise.reject(400);
 
-        return this.getIdByEmail(req.body.email).then(
+        return new Promise(function(resolve, reject){
+          bcrypt.hash(req.body.password, /*saltRounds*/ 10, function(err, hash) {
+            // Store hash in your password DB.
+            console.log("hash :",hash);
+            req.body.password = hash;
+            resolve();
+          });
+        }).then(
+          ()=>{ return this.getIdByEmail(req.body.email);}
+        ).then(
           (user) => {
             if(user.length!==0) return Promise.reject(400);
             else return this.insertQueryBuilder(req);
@@ -91,17 +103,36 @@ define([
 
         return this.queryDB(
           `SELECT * FROM users WHERE email='${email}'`)
+          // Check user exists
           .then(
             (result) => {
-              if (result.length !== 1 || result[0].password !== password)
-              return Promise.reject(401);
-              else{
-                  // TODO
-                  // create a token
-                  // update the token
-                  // send the token
-                  return auth.generateJWT(result[0]);
+              if (result.length == 1)return result[0];
+              else return Promise.reject(401);
+            }
+          ).then(
+            (user)=>{
+              return bcrypt.compare(password, user.password).then(
+                (res)=>{
+                  if(res==true) return auth.generateJWT(user);
+                  else return Promise.reject(401);
                 }
+              );
+            }
+          ).catch(
+            (code) => {return Promise.reject(code || 401);}
+          );
+      },
+      authenticateWithHash : function(email, hashPassword){
+        if(email == undefined || hashPassword == undefined)
+        return Promise.reject(400);// * Verifying firewall when missing fields... OK
+
+        return this.queryDB(
+          `SELECT * FROM users WHERE email='${email}'`)
+          .then(
+            (result) => {
+              if (result.length !== 1 || result[0].password !== hashPassword)
+              return Promise.reject(401);
+              else{  return auth.generateJWT(result[0]); }
             }
           ).catch(
             (code) => {return Promise.reject(401);}
@@ -112,7 +143,6 @@ define([
         return this.queryDB(`SELECT id FROM users WHERE email='${email}'`)
         .then (
           (result) => {
-            console.log(result);
             if(result.length===0) return Promise.reject(404);
             return parseInt(result[0].id);
           }

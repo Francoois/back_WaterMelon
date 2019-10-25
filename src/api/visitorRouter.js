@@ -15,10 +15,11 @@ define([
     users.authenticate(email,password)
     .then(
       (token)=>{
+        console.log("TOKEN :",token);
         res.status(200).send({access_token : token});
       }
     )
-    .catch((code)=>{res.sendStatus(code)});
+    .catch((code)=>{res.sendStatus(code||500)});
   });
 
   visitorRouter.post('/users', function(req, res) {

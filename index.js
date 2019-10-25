@@ -8,7 +8,6 @@ requirejs.config({
 requirejs([
   'express', //https://expressjs.com/fr/api.html#res https://expressjs.com/fr/guide/using-middleware.html
   'body-parser',
-  'bcrypt', // Password encryption https://github.com/kelektiv/node.bcrypt.js#readme
 
   'data/dbConnector',
   'util/authenticator',
@@ -21,7 +20,7 @@ requirejs([
 ],
 
 function(
-  express, bodyParser, bcrypt,
+  express, bodyParser,
   db, auth,
   users,
   adminRouter, userRouter, visitorRouter
@@ -33,11 +32,12 @@ function(
   prefix = '/v1',
   port = 8000;
 
-  const debug = true;
+  const debug = false;
   if (debug) process.countCall = 0;
 
   app.use(bodyParser.urlencoded({ extended: true }));
 
+  // DEBUG OUTPUT
   if(debug){
     app.use ((req,res,next) => {
       process.countCall++;
@@ -57,8 +57,9 @@ function(
 
   app.use(prefix, visitorRouter);
 
-  // JWT - call appropriate router
-  app.use(function(req,res,next){
+  app.use(
+    // ACCESS CONTROL : JWT OR api_key
+    function(req,res,next){
     const api_key = req.headers["x-auth-token"];
 
     if(api_key !== undefined && api_key.includes('api_')){
@@ -66,7 +67,7 @@ function(
         (userz)=>{
 
           if (userz.length===1){
-            return users.authenticate(userz[0].email,userz[0].password)
+            return users.authenticateWithHash(userz[0].email,userz[0].password)
           } else next();
         }
       ).then(
@@ -77,9 +78,9 @@ function(
         (code) => { return code || 500 ;}
       )
     } else next();
-
-
   },
+
+  //JWT Authentication
   function(req,res,next) {
     const token = req.headers["x-auth-token"];
 
@@ -91,7 +92,7 @@ function(
     users.isValidToken(token)
     .then(
       (tokenOk)=>{
-
+        // Routing depending on user OR admin
         if (tokenOk){
           if( auth.isAdminToken(token) ){
             console.log("adminRouter");
@@ -114,14 +115,6 @@ function(
     )
   });
 
-// FIXME : don't check if authenticated but if user_id param is ok, irrelevant
-  function _isAuthenticated(req){
-    const token = req.headers["x-auth-token"];
-    const id = parseInt(req.query["user_id"]);
-    return ( ('user_id' in req.query) && (auth.getTokenUserId(token)===id) ) ? true : false;
-  }
-
-
   app.listen(port, function(){
     console.log("Watermelon listening on port "+port+"!");
   });
@@ -129,10 +122,5 @@ function(
 });
 
 // Deadline : 27 Octobre - Dimanche 23h59
-// TODO : les bonnes réponses
 // TODO Filtres
-// TODO pno check
 // TODO casse
-// TODO : Encrypted password
-
-// #ASK : A quoi sert  le champ api_key ?

@@ -191,7 +191,6 @@ define([
     exists : function(model_id){
       return this.getById(model_id).then(
         (object)=>{
-          console.log("EXIST TEST ON RESULT ", object);
           return Promise.resolve( (object.length===1) );
         }
       ).catch( (code) => {
