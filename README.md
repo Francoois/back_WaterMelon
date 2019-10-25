@@ -36,7 +36,7 @@ This architecture moves the business logic away from the node.js API Routes, to 
 ### Routers
 
 Routers files are located in `src/api`. Depending on user authentication, Routers are separated between :
-- `visitorRouter`,
+- `visitorRouter`,
 - `userRouter`,
 - `adminRouter`  
 
@@ -57,7 +57,7 @@ This allowed me to add new objects quickly using pre-existing functions !
 
 ### Database
 
-The database is accessed from the `data/dbConnector` object. In fact this object is a Singleton, only used by `model/datamodel` Object, to ensure that only one connection to the database is used.
+The database is accessed from the `data/dbConnector` object. In fact this object is a Singleton, only used by `model/datamodel` Object, to ensure that only one connection to the database is used.
 
 To allow to check parameters, the `data/dataIndex` object enumerate object parameters types.
 To generate an *INSERT* or *UPDATE* query, an object can be a *string* or *non String* value.
@@ -71,9 +71,9 @@ RequireJS is used to split the code into modules
 
 ### Jasmine
 
-Jasmine is used for tests. Currently test exists only for *users* and *cards* on *admin* routes. They are located in the `spec` folder and have a `*.spec.js` name. 
+Jasmine is used for tests. Currently tests exist only for *users* and *cards* on **admin** routes. They are located in the `spec` folder and have a `*.spec.js` name. 
 
-To launch the , you have to take some manual config steps :
+To launch the tests , you have to take some manual config steps :
  - you have to perform a manual POST to /login to get an admin JSON Web Token
  - to test the cards you also have to specify a users id in `attributes.form.user_id` in `cardsCRUD.spec.js`
 
