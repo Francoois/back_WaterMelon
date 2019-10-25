@@ -48,7 +48,7 @@ define([
         ).then(
           (result)=>{
             const user_id = result.insertId;
-            const userProm = this.getOne(user_id);
+            const userProm = this.getOne(user_id, /*justCreated*/ true);
 
             return Promise.all([
               userProm,
@@ -66,13 +66,16 @@ define([
       /**
        * id : integer
        */
-      getOne : function getOne(id){
+      getOne : function getOne(id, justCreated){
         return this.getById(id)
         .then(
           (userResult)=> {
             const user = userResult[0];
             user.is_admin = (user.is_admin === 1);
-            user.access_token = user.api_key; //FIXME
+
+            if(justCreated===true) user.access_token = user.api_key;
+            delete user.password;
+            delete user.api_key;
             return Promise.resolve(user);
           }
         )

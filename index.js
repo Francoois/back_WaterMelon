@@ -55,10 +55,12 @@ function(
     );
   }
 
+  // VISITOR Routes
   app.use(prefix, visitorRouter);
 
+  // ACCESS CONTROL
   app.use(
-    // ACCESS CONTROL : JWT OR api_key
+    // api_key access
     function(req,res,next){
     const api_key = req.headers["x-auth-token"];
 
