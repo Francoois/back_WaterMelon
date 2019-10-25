@@ -10,10 +10,7 @@ define([
   db, auth, datamodel, wallets, cards
 ){
 
-  const table = 'users';
-
   let User = Object.create(datamodel);
-
   Object.assign(User,
     {
       table : 'users',
@@ -21,9 +18,10 @@ define([
 
         if (req.body.is_admin == undefined)
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
-        req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000); //FIXME : api_key : what to do ?
+        req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000);
 
         if(!this.validateEmail(req.body.email)) return Promise.reject(400);
+
         return this.getIdByEmail(req.body.email).then(
           (user) => {
             if(user.length!==0) return Promise.reject(400);
@@ -68,20 +66,6 @@ define([
           }
         )
       },
-
-      /* This function is obsolete, due to new Database allowing to delete one user without its payment
-      deleteById : function(id){
-        let query = `DELETE FROM ${this.table} WHERE id=${id}`;
-
-        return Promise.all([
-          wallets.deleteByUserId(id),
-          cards.deleteByUserId(id)
-        ])
-        .then(
-          ()=>{return this.queryDB(query);},
-          ()=>{console.error("DELETE : delete wallet or cards failed");}
-        );
-      },*/
 
       /**
       * connect :
