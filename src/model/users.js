@@ -17,7 +17,7 @@ define([
       table : 'users',
       create : function(req){
 
-        if (req.body.is_admin == undefined)
+        if (req.body.is_admin === undefined || req.body.is_admin === '')
           req.body.is_admin = false; //FIXME : don't create from req, and is admin always false
 
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000);

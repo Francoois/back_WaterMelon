@@ -24,7 +24,7 @@ define([
 
   visitorRouter.post('/users', function(req, res) {
 
-    if('is_admin' in req.body) delete req.body.is_admin;
+    //if('is_admin' in req.body) delete req.body.is_admin;
 
     if(users.isParamObjectOk(req.body)){
       users.create(req).then(
