@@ -1,13 +1,12 @@
 //users.js
 
 define([
-  'data/dbConnector',
   'util/authenticator',
   'model/datamodel',
   'model/wallets',
   'model/cards'
 ], function(
-  db, auth, datamodel, wallets, cards
+  auth, datamodel, wallets, cards
 ){
 
   let User = Object.create(datamodel);
@@ -196,5 +195,3 @@ define([
   return User;
 
 });
-
-// #ASK = différence entre api_key et access_token

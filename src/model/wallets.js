@@ -1,13 +1,12 @@
 //wallets.js
 
 define([
-  'data/dbConnector',
   'model/datamodel',
   'model/payins',
   'model/payouts',
   'model/transfers'
 ], function (
-  db, model, payins, payouts, transfers
+  model, payins, payouts, transfers
 ){
   'use strict'
 

@@ -6,8 +6,6 @@ define([
 ], function(db, attributes){
   'use strict'
 
-
-
   return {
 
     /**

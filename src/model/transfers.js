@@ -15,22 +15,6 @@ define([
 
     table : 'transfers',
 
-    /*create : function(req){
-
-      const amount = req.body.amount;
-      const debited_wallet_id = req.body.debited_wallet_id;
-
-      return wallets.hasAmount(debited_wallet_id, amount).then(
-
-        (hasAmount)=>{
-          if(hasAmount===true){
-            return model.create.call(this, req);
-          } else return Promise.reject(403);
-        }
-
-      ).catch( (code)=>{ return code || 500 });
-    },*/
-
     getByCreditedWalletId : function(wID){
       console.log("INSIDE getCRED");
       return this.queryDB(
