@@ -38,5 +38,19 @@ define([
     }
 
   });
+
+  visitorRouter.post('/wallets', function (req, res) {
+
+      let userMail = req.params.email;
+
+      if (userMail === undefined || userMail === ''){
+          next();
+      }
+
+      users.getById()
+
+
+  });
+
   return visitorRouter;
 });
