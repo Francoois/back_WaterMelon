@@ -70,19 +70,38 @@ define([
        * id : integer
        */
       getOne : function getOne(id, justCreated){
-        return this.getById(id)
-        .then(
-          (userResult)=> {
-            const user = userResult[0];
+          
+        return Promise.all(
+            this.getById(id),
+            wallets.getByUserId(id)
+        ).then(
+          (userNWallet)=> {
+            const user = userNWallet[0];
             user.is_admin = (user.is_admin === 1);
 
             if(justCreated===true) user.access_token = user.api_key;
             delete user.password;
             delete user.api_key;
+
+            user.wallet_id = userNWallet[1];
+
             return Promise.resolve(user);
           }
         )
       },
+
+        getAll : function(){
+          return datamodel.getAll.call(this).then(
+              (userResults) => {
+                  return userResults.map((user)=>{
+
+                      wallets.getByUserId(user.id).then(
+                          (wallet_id)=>{ user.wallet_id = wallet_id ; }
+                      );
+                  });
+              }
+          )
+        },
 
       /**
       * connect :

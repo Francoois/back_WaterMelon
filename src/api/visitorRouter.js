@@ -2,6 +2,7 @@ define([
   'express',
 
   'model/users',
+    'model/wallets'
 
 ], function( express, users ){
 
@@ -39,6 +40,7 @@ define([
 
   });
 
+  /*
   visitorRouter.post('/wallets', function (req, res) {
 
       let userMail = req.params.email;
@@ -47,10 +49,12 @@ define([
           next();
       }
 
-      users.getById()
-
-
-  });
+      users.getIdByEmail(userMail).then(
+          (userId)=>{
+              return wallets.getByUserId(userId)
+          }
+      )
+  });*/
 
   return visitorRouter;
 });
