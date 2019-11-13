@@ -70,23 +70,29 @@ define([
        * id : integer
        */
       getOne : function getOne(id, justCreated){
-          
-        return Promise.all(
-            this.getById(id),
-            wallets.getByUserId(id)
-        ).then(
+
+          let userProm = this.getById(id);
+          let walletIdProm = wallets.getByUserId(id);
+
+        return Promise.all([
+            userProm,
+            walletIdProm
+        ]).then(
           (userNWallet)=> {
-            const user = userNWallet[0];
+            const user = userNWallet[0][0];
             user.is_admin = (user.is_admin === 1);
 
             if(justCreated===true) user.access_token = user.api_key;
             delete user.password;
             delete user.api_key;
 
-            user.wallet_id = userNWallet[1];
+            user.wallet_id = userNWallet[1][0].id;
 
             return Promise.resolve(user);
-          }
+          },
+            (err) => {
+              console.log("Get user or wallet failed");
+            }
         )
       },
 
@@ -96,7 +102,7 @@ define([
                   return userResults.map((user)=>{
 
                       wallets.getByUserId(user.id).then(
-                          (wallet_id)=>{ user.wallet_id = wallet_id ; }
+                          (wallet_id)=>{ return user.wallet_id = wallet_id ; }
                       );
                   });
               }

@@ -32,7 +32,7 @@ function(
   prefix = '/v1',
   port = 8000;
 
-  const debug = false;
+  const debug = true;
   if (debug) process.countCall = 0;
 
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,7 +41,7 @@ function(
   if(debug){
     app.use ((req,res,next) => {
       process.countCall++;
-      if (process.countCall > 78) process.exit(0);
+      //if (process.countCall > 78) process.exit(0);
       console.log('V V V\n');
       console.log(process.countCall);
       next();
