@@ -41,6 +41,7 @@ define([
   });
 
 
+  /*
   visitorRouter.get('/wallets', function (req, res) {
 
       let userMail = req.body.email;
@@ -54,7 +55,7 @@ define([
               return wallets.getByUserId(userId);
           }
       )
-  });
+  });*/
 
   return visitorRouter;
 });
