@@ -247,6 +247,26 @@ define([
         );
       },
 
+        update : function(id, putData){
+
+            return new Promise(function(resolve, reject){
+                return Promise.resolve(
+                    bcrypt.hash(putData.password, /*saltRounds*/ 10, function(err, hash) {
+                        // Store hash in your password DB.
+                        console.log("hash :",hash);
+                        putData.password = hash;
+                        resolve();
+                    })
+                );
+            }).then(
+                ()=>{
+                    return datamodel.update.call(this,id,putData);
+                }
+            ).catch(
+                ()=>{ console.log("ERROR UPDATING USER");}
+            );
+        },
+
       validateEmail : function validateEmail(email) {
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
