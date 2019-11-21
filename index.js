@@ -8,6 +8,7 @@ requirejs.config({
 requirejs([
   'express', //https://expressjs.com/fr/api.html#res https://expressjs.com/fr/guide/using-middleware.html
   'body-parser',
+  'cors',
 
   'data/dbConnector',
   'util/authenticator',
@@ -20,7 +21,7 @@ requirejs([
 ],
 
 function(
-  express, bodyParser,
+  express, bodyParser, cors,
   db, auth,
   users,
   adminRouter, userRouter, visitorRouter
@@ -31,6 +32,8 @@ function(
   const app = express(),
   prefix = '/v1',
   port = 8000;
+
+  app.use(cors());
 
   const debug = true;
   if (debug) process.countCall = 0;
