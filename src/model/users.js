@@ -100,19 +100,16 @@ define([
           return datamodel.getAll.call(this).then(
               (userResults) => {
 
-                  return new Promise(function(fulfill, reject)
-                  {
                       const res = userResults.map((user) => {
 
-                          wallets.getByUserId(user.id).then(
-                              (wallet_id) => {
-                                  user.wallet_id = wallet_id;
+                          return wallets.getByUserId(user.id).then(
+                              (wallet) => {
+                                  user.wallet_id = wallet[0].id;
+                                  return user;
                               }
                           );
-                          return user;
                       });
-                      fulfill(res);
-                  })
+                      return Promise.all(res);
               }
           )
         },
