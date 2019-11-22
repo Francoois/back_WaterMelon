@@ -99,12 +99,20 @@ define([
         getAll : function(){
           return datamodel.getAll.call(this).then(
               (userResults) => {
-                  return userResults.map((user)=>{
 
-                      wallets.getByUserId(user.id).then(
-                          (wallet_id)=>{ return user.wallet_id = wallet_id ; }
-                      );
-                  });
+                  return new Promise(function(fulfill, reject)
+                  {
+                      const res = userResults.map((user) => {
+
+                          wallets.getByUserId(user.id).then(
+                              (wallet_id) => {
+                                  user.wallet_id = wallet_id;
+                              }
+                          );
+                          return user;
+                      });
+                      fulfill(res);
+                  })
               }
           )
         },
