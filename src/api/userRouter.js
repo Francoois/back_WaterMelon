@@ -20,7 +20,7 @@ define([
   /**
    * Connected user : gets only himself
    */
-  userRouter.get('/users', function(req, res) {
+  /*userRouter.get('/users', function(req, res) {
     //res.sendStatus(200); // Forbidden
     users.getOne(_getJWTUser(req)).then(
       (result)=>{
@@ -28,7 +28,14 @@ define([
       },
       ()=>{res.sendStatus(400)}
     );
-  });
+  });*/
+    userRouter.get('/users', function(req, res) {
+        users.getAll().then(
+            (result)=>{res.status(200).json(result)},
+            ()=>{res.sendStatus(500)}
+        );
+    });
+
   userRouter.delete('/users/:id(\\d+)', function(req, res){
     const user_id = _getJWTUser(req);
     const id = parseInt(req.params.id);
