@@ -2,8 +2,9 @@ define([
   'express',
 
   'model/users',
+    'model/wallets'
 
-], function( express, users ){
+], function( express, users, wallets ){
 
   const visitorRouter = express.Router();
 
@@ -38,5 +39,23 @@ define([
     }
 
   });
+
+
+  /*
+  visitorRouter.get('/wallets', function (req, res) {
+
+      let userMail = req.body.email;
+
+      if (userMail === undefined || userMail === ''){
+          next();
+      }
+
+      users.getIdByEmail(userMail).then(
+          (userId)=>{
+              return wallets.getByUserId(userId);
+          }
+      )
+  });*/
+
   return visitorRouter;
 });

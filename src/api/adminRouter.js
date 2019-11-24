@@ -2,9 +2,10 @@ define([
   'express',
 
   'model/users',
-  'model/cards'
+  'model/cards',
+  'model/wallets'
 
-], function( express, users, cards ){
+], function( express, users, cards, wallets ){
 
   const adminRouter = express.Router();
 

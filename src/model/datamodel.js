@@ -159,8 +159,8 @@ define([
       for (let params of [attributes[table].strParams, attributes[table].nonStrParams]) {
         for (let param of params){
 
-          let notUserDefined = (attributes[table].notUserDefined.indexOf(param) != -1);
-          let isOptional = (attributes[table].optional.indexOf(param) != -1);
+          let notUserDefined = (attributes[table].notUserDefined.indexOf(param) !== -1);
+          let isOptional = (attributes[table].optional.indexOf(param) !== -1);
 
           // Is the attribute in parameters ?
           if( paramObj.hasOwnProperty(param) ){

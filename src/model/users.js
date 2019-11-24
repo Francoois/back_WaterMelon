@@ -22,7 +22,10 @@ define([
 
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000);
 
-        if(!this.validateEmail(req.body.email)) return Promise.reject(400);
+        if(!this.validateEmail(req.body.email)) {
+            console.log("Bad Mail");
+            return Promise.reject(400);
+        }
 
         return new Promise(function(resolve, reject){
           bcrypt.hash(req.body.password, /*saltRounds*/ 10, function(err, hash) {
@@ -70,19 +73,49 @@ define([
        * id : integer
        */
       getOne : function getOne(id, justCreated){
-        return this.getById(id)
-        .then(
-          (userResult)=> {
-            const user = userResult[0];
+
+          let userProm = this.getById(id);
+          let walletIdProm = wallets.getByUserId(id);
+
+        return Promise.all([
+            userProm,
+            walletIdProm
+        ]).then(
+          (userNWallet)=> {
+            const user = userNWallet[0][0];
             user.is_admin = (user.is_admin === 1);
 
             if(justCreated===true) user.access_token = user.api_key;
             delete user.password;
             delete user.api_key;
+
+            user.wallet_id = userNWallet[1][0].id;
+
             return Promise.resolve(user);
-          }
+          },
+            (err) => {
+              console.log("Get user or wallet failed");
+            }
         )
       },
+
+        getAll : function(){
+          return datamodel.getAll.call(this).then(
+              (userResults) => {
+
+                      const res = userResults.map((user) => {
+
+                          return wallets.getByUserId(user.id).then(
+                              (wallet) => {
+                                  user.wallet_id = wallet[0].id;
+                                  return user;
+                              }
+                          );
+                      });
+                      return Promise.all(res);
+              }
+          )
+        },
 
       /**
       * connect :
@@ -221,6 +254,26 @@ define([
           }
         );
       },
+
+        update : function(id, putData){
+
+            return new Promise(function(resolve, reject){
+                return Promise.resolve(
+                    bcrypt.hash(putData.password, /*saltRounds*/ 10, function(err, hash) {
+                        // Store hash in your password DB.
+                        console.log("hash :",hash);
+                        putData.password = hash;
+                        resolve();
+                    })
+                );
+            }).then(
+                ()=>{
+                    return datamodel.update.call(this,id,putData);
+                }
+            ).catch(
+                ()=>{ console.log("ERROR UPDATING USER");}
+            );
+        },
 
       validateEmail : function validateEmail(email) {
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
