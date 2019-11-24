@@ -22,7 +22,10 @@ define([
 
         req.body.api_key = 'api_'+req.body.email+Date.now()+Math.floor(Math.random()*1000);
 
-        if(!this.validateEmail(req.body.email)) return Promise.reject(400);
+        if(!this.validateEmail(req.body.email)) {
+            console.log("Bad Mail");
+            return Promise.reject(400);
+        }
 
         return new Promise(function(resolve, reject){
           bcrypt.hash(req.body.password, /*saltRounds*/ 10, function(err, hash) {
